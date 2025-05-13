@@ -10,6 +10,8 @@ COPY requirements.txt .
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy the bot.py file into the container
+COPY bot.py .
 
 # Set environment variables (optional - or use .env file)
 # ENV BOT_TOKEN=your_token_here
