@@ -7,6 +7,7 @@ from aiogram.types import BotCommand
 from aiogram.fsm.storage.memory import MemoryStorage
 from config import BOT_TOKEN
 from handlers import start, publisher, advertiser, admin, earnings
+from handlers.inline import general as inline_general  # NEW
 from flask import Flask
 
 app = Flask(__name__)
@@ -25,7 +26,8 @@ async def main():
         publisher.router,
         advertiser.router,
         admin.router,
-        earnings.router
+        earnings.router,
+        inline_general.router  # NEW INLINE ROUTER
     )
 
     # Set default commands
@@ -43,7 +45,7 @@ async def main():
 if __name__ == "__main__":
     import threading
 
-    # Start Flask app in a separate thread
+    # Start Flask app in a separate thread (for Koyeb or UptimeRobot pings)
     threading.Thread(
         target=lambda: app.run(
             host='0.0.0.0',
