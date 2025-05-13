@@ -38,7 +38,7 @@ async def help_cb(callback: CallbackQuery):
 @router.callback_query(F.data == "privacy")
 async def privacy_cb(callback: CallbackQuery):
     await callback.message.edit_text(
-        "🔐 Your data is safe with us.",
+        PRIVACY_POLICY_TEXT,
         reply_markup=get_back_keyboard()
     )
     await callback.answer()
