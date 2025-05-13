@@ -1,4 +1,5 @@
 import asyncio
+import os
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
@@ -9,6 +10,10 @@ from handlers import start, publisher, advertiser, admin, earnings
 from flask import Flask
 
 app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return "Bot is running..."
 
 async def main():
     bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
@@ -35,11 +40,17 @@ async def main():
     print("Bot is running...")
     await dp.start_polling(bot)
 
-@app.route('/')
-def index():
-    return "Bot is running..."
-
 if __name__ == "__main__":
     import threading
-    threading.Thread(target=lambda: app.run(host='0.0.0.0', port=5000)).start()
+
+    # Start Flask app in a separate thread
+    threading.Thread(
+        target=lambda: app.run(
+            host='0.0.0.0',
+            port=int(os.environ.get("PORT", 5000)),
+            use_reloader=False
+        )
+    ).start()
+
+    # Start Telegram bot
     asyncio.run(main())
