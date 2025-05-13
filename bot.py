@@ -6,6 +6,9 @@ from aiogram.types import BotCommand
 from aiogram.fsm.storage.memory import MemoryStorage
 from config import BOT_TOKEN
 from handlers import start, publisher, advertiser, admin, earnings
+from flask import Flask
+
+app = Flask(__name__)
 
 async def main():
     bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
@@ -32,5 +35,11 @@ async def main():
     print("Bot is running...")
     await dp.start_polling(bot)
 
+@app.route('/')
+def index():
+    return "Bot is running..."
+
 if __name__ == "__main__":
+    import threading
+    threading.Thread(target=lambda: app.run(host='0.0.0.0', port=5000)).start()
     asyncio.run(main())
