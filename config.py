@@ -5,7 +5,7 @@ import os
 API_ID = int(os.getenv("API_ID", "123456"))
 API_HASH = os.getenv("API_HASH", "your_api_hash")
 BOT_TOKEN = os.getenv("BOT_TOKEN", "your_bot_token")
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://AOMusicBot:AOMusicBot@cluster0.sibxiqk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 
 LOG_CHANNEL = int(os.getenv("LOG_CHANNEL", "-1001234567890"))
 ADMIN_IDS = list(map(int, os.getenv("ADMIN_IDS", "123456789").split()))
