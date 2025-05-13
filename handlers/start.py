@@ -2,9 +2,11 @@ from aiogram import Router
 from aiogram.types import Message
 from aiogram.filters import Command
 from templates.info_texts import WELCOME_TEXT
+from app.handlers.inline.general import get_start_keyboard
 
 router = Router()
 
-@router.message(Command(commands=["start", "help"]))
+@router.message(Command("start"))
 async def start_handler(msg: Message):
-    await msg.answer(WELCOME_TEXT.format(name=msg.from_user.full_name))
+    keyboard = get_start_keyboard()
+    await msg.answer(WELCOME_TEXT.format(name=msg.from_user.full_name), reply_markup=keyboard)
