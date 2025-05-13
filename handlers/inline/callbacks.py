@@ -1,5 +1,8 @@
+from aiogram import Router
 from aiogram.types import CallbackQuery
 from aiogram.filters import F
+
+router = Router()
 
 @router.callback_query(F.data == "publisher_panel")
 async def publisher_panel_cb(callback: CallbackQuery):
