@@ -1,4 +1,4 @@
-START_TEXT = """
+WELCOME_TEXT = """
 Welcome to PXL Ads Network!
 
 If you're a bot owner, you can monetize your bot by showing text ads.
