@@ -1,5 +1,7 @@
 WELCOME_TEXT = """ 
-Welcome to PXL Ads Network! If you're a bot owner, you can monetize your bot by showing text ads. Use the menu below to get started: 
+Welcome to PXL Ads Network! 
+If you're a bot owner, you can monetize your bot by showing text ads. 
+Use the menu below to get started: 
 - Register your bot 
 - Submit ads 
 - Track earnings 
@@ -30,3 +32,14 @@ Use the below options:
 
 ELIGIBLE_TEXT = "You are eligible for this feature."
 NOT_ELIGIBLE_TEXT = "You are not eligible for this feature."
+
+PRIVACY_POLICY_TEXT = """ 
+<b>Privacy Policy - PXL Ads Network</b>
+
+1. We respect your privacy. We do not share your personal data with third parties.
+2. Your Telegram ID and username are used only for bot-related services.
+3. Ads data is securely stored and not sold to anyone.
+4. We never send spam or promotional messages without your consent.
+5. You can request data deletion anytime.
+By using this bot, you agree to our privacy terms.
+"""
