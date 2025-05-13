@@ -72,3 +72,10 @@ async def get_ad_stats(ad_id):
 #Approve payment (example)
 async def approve_payment(publisher_id, amount):
     await publishers.update_one({"user_id": publisher_id}, {"$inc": {"earnings": amount}})
+
+#Get earnings
+async def get_earnings(user_id: int):
+    publisher = await publishers.find_one({"user_id": user_id})
+    if publisher:
+        return publisher.get("earnings", 0)
+    return 0
