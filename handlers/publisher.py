@@ -7,10 +7,18 @@ router = Router()
 
 @router.message(Command("register"))
 async def register_bot(msg: types.Message):
-    result = await register_publisher(msg.from_user.id, msg.from_user.username, "bot_link")
-    await msg.answer("Registered successfully!" if result else "You are already registered.")
+    try:
+        await register_publisher(msg.from_user.id, msg.from_user.username, "bot_link")
+        await msg.answer("Registered successfully!")
+    except Exception as e:
+        await msg.answer("You are already registered or an error occurred.")
+        print(f"Error: {e}")
 
 @router.message(Command("eligibility"))
 async def check(msg: types.Message):
-    is_eligible = await check_eligibility(msg.from_user.id)
-    await msg.answer(ELIGIBLE_TEXT if is_eligible else NOT_ELIGIBLE_TEXT)
+    try:
+        is_eligible = await check_eligibility(msg.from_user.id)
+        await msg.answer(ELIGIBLE_TEXT if is_eligible else NOT_ELIGIBLE_TEXT)
+    except Exception as e:
+        await msg.answer("An error occurred.")
+        print(f"Error: {e}")
