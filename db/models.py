@@ -5,77 +5,112 @@ from bson import ObjectId
 
 #Register a new publisher
 async def register_publisher(user_id: int, username: str, bot_link: str):
-    data = {
-        "user_id": user_id,
-        "username": username,
-        "bot_link": bot_link,
-        "approved": False,
-        "earnings": 0,
-        "clicks": 0,
-        "joined": datetime.utcnow()
-    }
-    await publishers.update_one({"user_id": user_id}, {"$set": data}, upsert=True)
+    try:
+        data = {
+            "user_id": user_id,
+            "username": username,
+            "bot_link": bot_link,
+            "approved": False,
+            "earnings": 0,
+            "clicks": 0,
+            "joined": datetime.utcnow()
+        }
+        await publishers.update_one({"user_id": user_id}, {"$set": data}, upsert=True)
+    except Exception as e:
+        print(f"Error: {e}")
 
 #Get a publisher
 async def get_publisher(user_id: int):
-    return await publishers.find_one({"user_id": user_id})
+    try:
+        return await publishers.find_one({"user_id": user_id})
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
 
 #Approve a publisher
 async def approve_publisher(user_id: int):
-    await publishers.update_one({"user_id": user_id}, {"$set": {"approved": True}})
+    try:
+        await publishers.update_one({"user_id": user_id}, {"$set": {"approved": True}})
+    except Exception as e:
+        print(f"Error: {e}")
 
 #Add a new ad
 async def submit_ad(user_id: int, ad_text: str, link: str):
-    data = {
-        "owner": user_id,
-        "text": ad_text,
-        "link": link,
-        "clicks": 0,
-        "approved": False,
-        "submitted_at": datetime.utcnow()
-    }
-    await ads.insert_one(data)
+    try:
+        data = {
+            "owner": user_id,
+            "text": ad_text,
+            "link": link,
+            "clicks": 0,
+            "approved": False,
+            "submitted_at": datetime.utcnow()
+        }
+        await ads.insert_one(data)
+    except Exception as e:
+        print(f"Error: {e}")
 
 #Get random approved ad
 async def get_random_ad(exclude_owner: str = None):
-    query = {"approved": True}
-    if exclude_owner:
-        query["owner"] = {"$ne": exclude_owner}
-    ads_list = await ads.find(query).to_list(length=50)
-    return random.choice(ads_list) if ads_list else None
+    try:
+        query = {"approved": True}
+        if exclude_owner:
+            query["owner"] = {"$ne": exclude_owner}
+        ads_list = await ads.find(query).to_list(length=50)
+        return random.choice(ads_list) if ads_list else None
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
 
 #Approve ad
 async def approve_ad(ad_id):
-    await ads.update_one({"_id": ObjectId(ad_id)}, {"$set": {"approved": True}})
+    try:
+        await ads.update_one({"_id": ObjectId(ad_id)}, {"$set": {"approved": True}})
+    except Exception as e:
+        print(f"Error: {e}")
 
 #Track clicks and earnings
 async def record_click(publisher_id: int, amount: int):
-    await publishers.update_one({"user_id": publisher_id}, {
-        "$inc": {
-            "clicks": 1,
-            "earnings": amount
-        }
-    })
+    try:
+        await publishers.update_one({"user_id": publisher_id}, {
+                                    "$inc": {"clicks": 1, "earnings": amount}})
+    except Exception as e:
+        print(f"Error: {e}")
 
 #Check eligibility
 async def check_eligibility(user_id: int):
-    publisher = await get_publisher(user_id)
-    if publisher and publisher["approved"]:
-        return True
-    return False
+    try:
+        publisher = await get_publisher(user_id)
+        if publisher and publisher["approved"]:
+            return True
+        return False
+    except Exception as e:
+        print(f"Error: {e}")
+        return False
 
 #Get ad stats
 async def get_ad_stats(ad_id):
-    ad = await ads.find_one({"_id": ObjectId(ad_id)})
-    return ad
+    try:
+        ad = await ads.find_one({"_id": ObjectId(ad_id)})
+        return ad
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
 
 #Approve payment (example)
 async def approve_payment(publisher_id, amount):
-    await publishers.update_one({"user_id": publisher_id}, {"$inc": {"earnings": amount}})
+    try:
+        await publishers.update_one({"user_id": publisher_id}, {
+                                    "$inc": {"earnings": amount}})
+    except Exception as e:
+        print(f"Error: {e}")
 
 #Get earnings
 async def get_earnings(user_id: int):
-    publisher = await publishers.find_one({"user_id": user_id})
-    if publisher:
-        return publisher.get("earnings", 0)
-    return 0
+    try:
+        publisher = await publishers.find_one({"user_id": user_id})
+        if publisher:
+            return publisher.get("earnings", 0)
+        return 0
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
