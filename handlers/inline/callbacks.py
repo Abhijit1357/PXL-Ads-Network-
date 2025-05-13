@@ -1,11 +1,11 @@
 from aiogram import Router
 from aiogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.filters import F
-from templates.info_texts import WELCOME_TEXT
+from templates.info_texts import WELCOME_TEXT, PRIVACY_POLICY_TEXT
 
 router = Router()
 
-# Back button keyboard
+#Back button keyboard
 def get_back_keyboard():
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="◀️ Back", callback_data="go_back")]
