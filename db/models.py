@@ -1,6 +1,7 @@
 from db.db import publishers, ads
 from datetime import datetime
 import random
+from bson import ObjectId
 
 #Register a new publisher
 async def register_publisher(user_id: int, username: str, bot_link: str):
@@ -45,7 +46,7 @@ async def get_random_ad(exclude_owner: str = None):
 
 #Approve ad
 async def approve_ad(ad_id):
-    await ads.update_one({"_id": ad_id}, {"$set": {"approved": True}})
+    await ads.update_one({"_id": ObjectId(ad_id)}, {"$set": {"approved": True}})
 
 #Track clicks and earnings
 async def record_click(publisher_id: int, amount: int):
@@ -62,3 +63,8 @@ async def check_eligibility(user_id: int):
     if publisher and publisher["approved"]:
         return True
     return False
+
+#Get ad stats
+async def get_ad_stats(ad_id):
+    ad = await ads.find_one({"_id": ObjectId(ad_id)})
+    return ad
