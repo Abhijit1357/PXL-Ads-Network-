@@ -27,6 +27,7 @@ async def main():
         advertiser.router,
         admin.router,
         earnings.router,
+        inline_general.router,
     )
 
     # Set default commands
