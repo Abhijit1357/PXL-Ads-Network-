@@ -8,6 +8,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from config import BOT_TOKEN
 from handlers import start, publisher, advertiser, admin, earnings
 from handlers.inline import general as inline_general
+from handlers.inline import callbacks as inline_callbacks
 from flask import Flask  # Flask import kiya gaya hai
 
 app = Flask(__name__)
@@ -28,7 +29,7 @@ async def main():
         admin.router,
         earnings.router,
         inline_general.router,
-        inline_callbacks.router,  # Add this line
+        inline_callbacks.router,
     )
 
     # Set default commands
