@@ -8,7 +8,7 @@ BOT_TOKEN = os.getenv("BOT_TOKEN", "your_bot_token")
 MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://AOMusicBot:AOMusicBot@cluster0.sibxiqk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 
 LOG_CHANNEL = int(os.getenv("LOG_CHANNEL", "-1001234567890"))
-ADMIN_IDS = list(map(int, os.getenv("ADMIN_IDS", "123456789").split()))
+ADMIN_IDS = list(map(int, os.getenv("ADMIN_IDS", "6148346742").split()))
 
 # CPM Values (example: ₹10 per 1000 impressions)
 DEFAULT_CPM = float(os.getenv("DEFAULT_CPM", 10.0))
