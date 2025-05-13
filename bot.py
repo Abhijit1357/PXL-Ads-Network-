@@ -8,6 +8,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from config import BOT_TOKEN
 from handlers import start, publisher, advertiser, admin, earnings
 from handlers.inline import general as inline_general
+from flask import Flask  # Flask import kiya gaya hai
 
 app = Flask(__name__)
 
