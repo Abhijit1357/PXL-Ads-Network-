@@ -1,0 +1,18 @@
+[
+  {
+    "ad_id": "ad_001",
+    "headline": "Earn ₹500 Daily from Home!",
+    "description": "Join India's #1 survey platform. No investment. Instant payout.",
+    "target_url": "https://your-site.com/earn500",
+    "cpm": 2.5,
+    "active": true
+  },
+  {
+    "ad_id": "ad_002",
+    "headline": "Boost Your Telegram Bot",
+    "description": "Advertise on 100+ active bots. Target real users. Instant setup.",
+    "target_url": "https://your-site.com/advertise",
+    "cpm": 3.0,
+    "active": true
+  }
+]
