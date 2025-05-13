@@ -28,6 +28,7 @@ async def main():
         admin.router,
         earnings.router,
         inline_general.router,
+        inline_callbacks.router,  # Add this line
     )
 
     # Set default commands
