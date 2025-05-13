@@ -1,10 +1,11 @@
 from aiogram import Router
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.filters import Command
 from templates.info_texts import WELCOME_TEXT
 
 router = Router()
 
-@router.message(commands=["start"])
+@router.message(Command("start"))
 async def start_handler(msg: Message):
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="📢 Publisher Panel", callback_data="publisher_panel")],
