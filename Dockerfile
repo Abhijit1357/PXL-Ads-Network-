@@ -10,9 +10,10 @@ COPY requirements.txt .
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the bot.py and config.py file into the container
+# Copy the bot.py, config.py, and handlers module into the container
 COPY bot.py .
 COPY config.py .
+COPY handlers/ ./handlers/
 
 # Set environment variables (optional - or use .env file)
 # ENV BOT_TOKEN=your_token_here
