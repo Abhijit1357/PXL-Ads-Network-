@@ -1,6 +1,6 @@
 from aiogram import Router
 from aiogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.filters import F
+from aiogram import F
 from templates.info_texts import WELCOME_TEXT, PRIVACY_POLICY_TEXT
 
 router = Router()
