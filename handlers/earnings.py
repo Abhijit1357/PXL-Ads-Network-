@@ -1,9 +1,10 @@
 from aiogram import Router, types
+from aiogram.filters import Command
 from db.models import get_earnings
 
 router = Router()
 
-@router.message(commands=["earnings"])
+@router.message(Command("earnings"))
 async def earnings(msg: types.Message):
     earnings_data = await get_earnings(msg.from_user.id)
-    await msg.answer(f"You have earned ₹{earnings_data:.2f} so far.")
+    await msg.answer(f"Your earnings: ₹{earnings_data}")
