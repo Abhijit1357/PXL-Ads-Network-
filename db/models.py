@@ -3,7 +3,7 @@ from datetime import datetime
 import random
 from bson import ObjectId
 
-Register a new publisher
+#Register a new publisher
 async def register_publisher(user_id: int, username: str, bot_link: str):
     data = {
         "user_id": user_id,
@@ -16,15 +16,15 @@ async def register_publisher(user_id: int, username: str, bot_link: str):
     }
     await publishers.update_one({"user_id": user_id}, {"$set": data}, upsert=True)
 
-Get a publisher
+#Get a publisher
 async def get_publisher(user_id: int):
     return await publishers.find_one({"user_id": user_id})
 
-Approve a publisher
+#Approve a publisher
 async def approve_publisher(user_id: int):
     await publishers.update_one({"user_id": user_id}, {"$set": {"approved": True}})
 
-Add a new ad
+#Add a new ad
 async def submit_ad(user_id: int, ad_text: str, link: str):
     data = {
         "owner": user_id,
@@ -36,7 +36,7 @@ async def submit_ad(user_id: int, ad_text: str, link: str):
     }
     await ads.insert_one(data)
 
-Get random approved ad
+#Get random approved ad
 async def get_random_ad(exclude_owner: str = None):
     query = {"approved": True}
     if exclude_owner:
@@ -44,11 +44,11 @@ async def get_random_ad(exclude_owner: str = None):
     ads_list = await ads.find(query).to_list(length=50)
     return random.choice(ads_list) if ads_list else None
 
-Approve ad
+#Approve ad
 async def approve_ad(ad_id):
     await ads.update_one({"_id": ObjectId(ad_id)}, {"$set": {"approved": True}})
 
-Track clicks and earnings
+#Track clicks and earnings
 async def record_click(publisher_id: int, amount: int):
     await publishers.update_one({"user_id": publisher_id}, {
         "$inc": {
@@ -57,18 +57,18 @@ async def record_click(publisher_id: int, amount: int):
         }
     })
 
-Check eligibility
+#Check eligibility
 async def check_eligibility(user_id: int):
     publisher = await get_publisher(user_id)
     if publisher and publisher["approved"]:
         return True
     return False
 
-Get ad stats
+#Get ad stats
 async def get_ad_stats(ad_id):
     ad = await ads.find_one({"_id": ObjectId(ad_id)})
     return ad
 
-Approve payment (example)
+#Approve payment (example)
 async def approve_payment(publisher_id, amount):
     await publishers.update_one({"user_id": publisher_id}, {"$inc": {"earnings": amount}})
