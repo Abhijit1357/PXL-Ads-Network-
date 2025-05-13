@@ -2,7 +2,7 @@
 
 import os
 
-API_ID = int(os.getenv("API_ID", "123456"))
+API_ID = int(os.getenv("API_ID", "22834593"))
 API_HASH = os.getenv("API_HASH", "your_api_hash")
 BOT_TOKEN = os.getenv("BOT_TOKEN", "your_bot_token")
 MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://AOMusicBot:AOMusicBot@cluster0.sibxiqk.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
