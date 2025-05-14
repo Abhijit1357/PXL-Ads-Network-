@@ -7,7 +7,7 @@ from aiogram.types import BotCommand
 from aiogram.fsm.storage.memory import MemoryStorage
 from config import BOT_TOKEN
 from handlers import start, publisher, advertiser, admin, earnings
-from handlers.inline.callbacks import router as inline_callbacks_router
+from handlers.inline.callbacks import inline_callbacks_router
 from flask import Flask
 
 app = Flask(__name__)
@@ -19,7 +19,6 @@ def index():
 async def main():
     bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher(storage=MemoryStorage())
-
     dp.include_routers(
         start.router,
         publisher.router,
@@ -28,7 +27,6 @@ async def main():
         earnings.router,
         inline_callbacks_router,
     )
-
     await bot.set_my_commands([
         BotCommand(command="start", description="Start the bot"),
         BotCommand(command="help", description="How this bot works"),
@@ -36,7 +34,6 @@ async def main():
         BotCommand(command="submit_ad", description="Submit an ad"),
         BotCommand(command="register_bot", description="Register your bot to earn")
     ])
-
     print("Bot is running...")
     await dp.start_polling(bot)
 
