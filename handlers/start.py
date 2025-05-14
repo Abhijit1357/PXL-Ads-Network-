@@ -2,7 +2,7 @@ from aiogram import Router
 from aiogram.types import Message
 from aiogram.filters import Command
 from templates.info_texts import WELCOME_TEXT
-from handlers.inline.keyboards import keyboards
+import handlers.inline.keyboards as keyboards
 
 router = Router()
 
