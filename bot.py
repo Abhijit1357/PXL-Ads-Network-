@@ -6,7 +6,7 @@ from aiogram.enums import ParseMode
 from aiogram.types import BotCommand
 from aiogram.fsm.storage.memory import MemoryStorage
 from config import BOT_TOKEN
-from handlers import start, publisher, advertiser, admin, earnings
+from handlers import start, advertiser, admin, earnings
 from handlers.inline.callbacks import inline_callbacks_router
 from flask import Flask
 
@@ -21,7 +21,6 @@ async def main():
     dp = Dispatcher(storage=MemoryStorage())
     dp.include_routers(
         start.router,
-        publisher.router,
         advertiser.router,
         admin.router,
         earnings.router,
