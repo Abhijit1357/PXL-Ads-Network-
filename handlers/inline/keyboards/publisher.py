@@ -1,12 +1,10 @@
-from aiogram import Router
-from aiogram.types import CallbackQuery
-from ...keyboards.publisher import get_publisher_panel_keyboard
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-router = Router()
-
-@router.callback_query(lambda x: x.data == "publisher_panel")
-async def publisher_panel_cb(callback: CallbackQuery):
-    keyboard = get_publisher_panel_keyboard()
-    text = """Publisher Panel"""
-    await callback.message.edit_text(text, reply_markup=keyboard)
-    await callback.answer()
+def get_publisher_panel_keyboard():
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="📊 Dashboard", callback_data="dashboard")],
+        [InlineKeyboardButton(text="🤖 Bot Monetization", callback_data="bot_monetization")],
+        [InlineKeyboardButton(text="💳 Withdraw", callback_data="withdraw")],
+        [InlineKeyboardButton(text="◀️ Back", callback_data="go_back")]
+    ])
+    return keyboard
