@@ -71,8 +71,7 @@ async def approve_ad(ad_id):
 #Track clicks and earnings
 async def record_click(publisher_id: int, amount: int):
     try:
-        await publishers.update_one({"user_id": publisher_id}, {
-                                    "$inc": {"clicks": 1, "earnings": amount}})
+        await publishers.update_one({"user_id": publisher_id}, {"$inc": {"clicks": 1, "earnings": amount}})
     except Exception as e:
         print(f"Error: {e}")
 
@@ -99,12 +98,11 @@ async def get_ad_stats(ad_id):
 #Approve payment (example)
 async def approve_payment(publisher_id, amount):
     try:
-        await publishers.update_one({"user_id": publisher_id}, {
-                                    "$inc": {"earnings": amount}})
+        await publishers.update_one({"user_id": publisher_id}, {"$inc": {"earnings": amount}})
     except Exception as e:
         print(f"Error: {e}")
 
-#Get earnings
+##Get earnings
 async def get_earnings(user_id: int):
     try:
         publisher = await publishers.find_one({"user_id": user_id})
@@ -114,3 +112,24 @@ async def get_earnings(user_id: int):
     except Exception as e:
         print(f"Error: {e}")
         return None
+
+#Is registered user
+async def is_registered_user(user_id: int):
+    publisher = await publishers.find_one({"user_id": user_id})
+    return publisher is not None
+
+#Create profile if not exists
+async def create_profile_if_not_exists(user_id: int, username: str = "", bot_link: str = ""):
+    publisher = await publishers.find_one({"user_id": user_id})
+    if not publisher:
+        await register_publisher(user_id, username, bot_link)
+
+#Get profile data
+async def get_profile_data(user_id: int):
+    publisher = await publishers.find_one({"user_id": user_id})
+    if publisher:
+        return {
+            "earnings": publisher.get("earnings", 0),
+            # Add other fields as needed
+        }
+    return None
