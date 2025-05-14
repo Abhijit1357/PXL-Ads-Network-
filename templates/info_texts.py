@@ -1,10 +1,14 @@
 WELCOME_TEXT = """ 
-Welcome to PXL Ads Network! 
-If you're a bot owner, you can monetize your bot by showing text ads. 
-Use the menu below to get started: 
-- Register your bot 
-- Submit ads 
-- Track earnings 
+<b>Welcome to <u>PXL Ads Network</u>!</b>
+
+Monetize your Telegram bot by displaying text-based ads and earn daily.
+
+<b>What you can do here:</b>
+• 📢 Register your bot
+• 💼 Submit ads for promotion
+• 📈 Track real-time earnings
+
+Use the menu below to get started and grow with us!
 """
 
 PUBLISHER_PANEL = """ 
