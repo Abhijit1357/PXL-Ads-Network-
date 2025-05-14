@@ -10,15 +10,7 @@ router = Router()
 async def profile_cb(callback: CallbackQuery):
     user_id = callback.from_user.id
     username = callback.from_user.username
-    if not await is_registered_user(user_id):
-        await callback.message.edit_text(
-            "⚠️ You are not registered yet.\n\nPlease register and accept the Privacy Policy to access your profile.",
-            reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(text="✅ Register & Accept", callback_data="register_accept")],
-                [InlineKeyboardButton(text="◀️ Back", callback_data="go_back")]
-            ])
-        )
-        return await callback.answer()
+    await create_profile_if_not_exists(user_id, username)
     profile = await get_profile_data(user_id)
     text = f""" 👤 <b>Your Profile</b> 🆔 User ID: <code>{user_id}</code> 💰 Total Earnings: ₹{profile['earnings']} """
     await callback.message.edit_text(
