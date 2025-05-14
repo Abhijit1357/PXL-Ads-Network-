@@ -1,6 +1,6 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery
-from handlers.inline.keyboards import get_back_keyboard
+import handlers.inline.keyboards as keyboards
 
 router = Router()
 
@@ -8,6 +8,6 @@ router = Router()
 async def advertiser_panel_cb(callback: CallbackQuery):
     await callback.message.edit_text(
         "💼 Advertiser panel coming soon.",
-        reply_markup=get_back_keyboard()
+        reply_markup=keyboards.get_back_keyboard()
     )
     await callback.answer()
