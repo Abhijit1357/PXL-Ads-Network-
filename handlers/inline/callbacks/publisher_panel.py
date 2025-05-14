@@ -1,12 +1,29 @@
 from aiogram import Router
 from aiogram.types import CallbackQuery
-from handlers.inline import keyboards
+from handlers.inline.keyboards.publisher import get_publisher_panel_keyboard, get_register_keyboard
+from db.models import is_registered_user, create_profile_if_not_exists
 
 router = Router()
 
 @router.callback_query(lambda x: x.data == "publisher_panel")
 async def publisher_panel_cb(callback: CallbackQuery):
-    keyboard = keyboards.get_publisher_panel_keyboard()
-    text = """Publisher Panel"""
-    await callback.message.edit_text(text, reply_markup=keyboard)
+    user_id = callback.from_user.id
+    username = callback.from_user.username
+
+    # Ensure profile exists
+    await create_profile_if_not_exists(user_id, username)
+
+    # Check registration
+    if not await is_registered_user(user_id):
+        await callback.message.edit_text(
+            "⚠️ You are not registered yet.\nPlease accept the Privacy Policy to continue.",
+            reply_markup=get_register_keyboard()
+        )
+    else:
+        await callback.message.edit_text(
+            "👤 <b>Your Publisher Panel</b>\nChoose an option below:",
+            reply_markup=get_publisher_panel_keyboard(),
+            parse_mode="HTML"
+        )
+
     await callback.answer()
