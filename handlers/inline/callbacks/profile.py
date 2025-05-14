@@ -2,10 +2,11 @@ from aiogram import Router
 from aiogram.types import CallbackQuery
 from db.models import get_profile_data, is_registered_user, create_profile_if_not_exists
 from handlers.inline.keyboards import get_back_keyboard
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 router = Router()
 
-@router.callback_query(F.data == "profile")
+@router.callback_query(lambda x: x.data == "profile")
 async def profile_cb(callback: CallbackQuery):
     user_id = callback.from_user.id
     if not await is_registered_user(user_id):
@@ -19,12 +20,10 @@ async def profile_cb(callback: CallbackQuery):
         return await callback.answer()
     profile = await get_profile_data(user_id)
     text = f""" 
-    👤 <b>Your Profile</b>
-    🆔 User ID: <code>{user_id}</code>
-    💰 Total Earnings: ₹{profile['earnings']}
-    🤖 Bots Registered: {profile['bots']}
-    👥 Referrals: {profile['referrals']}
-    """
+👤 <b>Your Profile</b> 
+🆔 User ID: <code>{user_id}</code> 
+💰 Total Earnings: ₹{profile['earnings']}
+"""
     await callback.message.edit_text(
         text,
         reply_markup=get_back_keyboard(),
@@ -32,7 +31,7 @@ async def profile_cb(callback: CallbackQuery):
     )
     await callback.answer()
 
-@router.callback_query(F.data == "register_accept")
+@router.callback_query(lambda x: x.data == "register_accept")
 async def register_accept_cb(callback: CallbackQuery):
     await create_profile_if_not_exists(callback.from_user.id)
     await callback.message.edit_text(
