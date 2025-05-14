@@ -1,4 +1,4 @@
-from aiogram import Router
+from aiogram import Router, F
 from aiogram.types import CallbackQuery
 from handlers.inline.keyboards import get_back_keyboard
 
