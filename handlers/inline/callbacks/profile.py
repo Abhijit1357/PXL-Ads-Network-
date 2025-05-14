@@ -12,12 +12,18 @@ async def profile_cb(callback: CallbackQuery):
     username = callback.from_user.username
     await create_profile_if_not_exists(user_id, username)
     profile = await get_profile_data(user_id)
-    text = f""" 👤 <b>Your Profile</b> 🆔 User ID: <code>{user_id}</code> 💰 Total Earnings: ₹{profile['earnings']} """
-    await callback.message.edit_text(
-        text,
-        reply_markup=get_back_keyboard(),
-        parse_mode="HTML"
-    )
+    if profile is not None:
+        text = f""" 👤 <b>Your Profile</b> 🆔 User ID: <code>{user_id}</code> 💰 Total Earnings: ₹{profile.get('earnings', 0)} """
+        await callback.message.edit_text(
+            text,
+            reply_markup=get_back_keyboard(),
+            parse_mode="HTML"
+        )
+    else:
+        await callback.message.edit_text(
+            "⚠️ Profile data not found.",
+            reply_markup=get_back_keyboard()
+        )
     await callback.answer()
 
 @router.callback_query(lambda x: x.data == "register_accept")
