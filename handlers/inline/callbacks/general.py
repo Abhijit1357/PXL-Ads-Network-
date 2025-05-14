@@ -1,6 +1,6 @@
 from aiogram import Router, F
 from aiogram.types import CallbackQuery
-from handlers.inline.keyboards import get_start_keyboard, get_back_keyboard
+import handlers.inline.keyboards as keyboards
 from templates.info_texts import WELCOME_TEXT, PRIVACY_POLICY_TEXT
 
 router = Router()
@@ -9,7 +9,7 @@ router = Router()
 async def help_cb(callback: CallbackQuery):
     await callback.message.edit_text(
         "❓ Here's how the bot works...",
-        reply_markup=get_back_keyboard()
+        reply_markup=keyboards.get_back_keyboard()
     )
     await callback.answer()
 
@@ -17,7 +17,7 @@ async def help_cb(callback: CallbackQuery):
 async def privacy_cb(callback: CallbackQuery):
     await callback.message.edit_text(
         PRIVACY_POLICY_TEXT,
-        reply_markup=get_back_keyboard()
+        reply_markup=keyboards.get_back_keyboard()
     )
     await callback.answer()
 
@@ -25,6 +25,6 @@ async def privacy_cb(callback: CallbackQuery):
 async def go_back(callback: CallbackQuery):
     await callback.message.edit_text(
         WELCOME_TEXT.format(name=callback.from_user.full_name),
-        reply_markup=get_start_keyboard()
+        reply_markup=keyboards.get_start_keyboard()
     )
     await callback.answer()
