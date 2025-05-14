@@ -1,7 +1,7 @@
 from aiogram import Router
 from aiogram.types import CallbackQuery
 from db.models import get_profile_data, is_registered_user, create_profile_if_not_exists
-from handlers.inline.keyboards import get_back_keyboard
+import handlers.inline.keyboards as keyboards
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 router = Router()
@@ -16,13 +16,13 @@ async def profile_cb(callback: CallbackQuery):
         text = f""" 👤 <b>Your Profile</b> 🆔 User ID: <code>{user_id}</code> 💰 Total Earnings: ₹{profile.get('earnings', 0)} """
         await callback.message.edit_text(
             text,
-            reply_markup=get_back_keyboard(),
+            reply_markup=keyboards.get_back_keyboard(),
             parse_mode="HTML"
         )
     else:
         await callback.message.edit_text(
             "⚠️ Profile data not found.",
-            reply_markup=get_back_keyboard()
+            reply_markup=keyboards.get_back_keyboard()
         )
     await callback.answer()
 
