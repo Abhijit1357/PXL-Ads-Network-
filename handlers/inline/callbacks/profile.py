@@ -9,9 +9,7 @@ router = Router()
 async def profile_cb(callback: CallbackQuery):
     user_id = callback.from_user.id
     username = callback.from_user.username
-
     await create_profile_if_not_exists(user_id, username)
-
     profile = await get_profile_data(user_id)
     if profile:
         text = (
@@ -28,6 +26,7 @@ async def profile_cb(callback: CallbackQuery):
     else:
         await callback.message.edit_text(
             "⚠️ <b>Profile data not found.</b>\nPlease register first.",
+            reply_markup=keyboards.get_back_keyboard(),
             parse_mode="HTML"
         )
     await callback.answer()
