@@ -1,5 +1,6 @@
 import asyncio
 import os
+import logging  # <-- Add this
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
@@ -9,6 +10,13 @@ from config import BOT_TOKEN
 from handlers import start, advertiser, admin, earnings
 from handlers.inline.callbacks import inline_callbacks_router
 from flask import Flask
+
+# Logging configuration
+logging.basicConfig(
+    level=logging.WARNING,
+    format="%(levelname)s:%(name)s:%(message)s"
+)
+logging.getLogger("aiogram.event").setLevel(logging.ERROR)
 
 app = Flask(__name__)
 
@@ -26,7 +34,6 @@ async def main():
         earnings.router,
         inline_callbacks_router,
     )
-    # Delete any webhook to avoid conflict with polling
     await bot.delete_webhook(drop_pending_updates=True)
 
     await bot.set_my_commands([
