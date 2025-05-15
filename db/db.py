@@ -3,7 +3,6 @@ from config import MONGO_URI
 import ssl
 import certifi
 from urllib.parse import quote_plus
-from aiogram.utils.exceptions import RetryAfter
 import logging
 
 # Configure logging
