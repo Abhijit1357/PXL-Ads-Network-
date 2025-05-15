@@ -48,13 +48,3 @@ async def register_cb(callback: CallbackQuery):
     await register_publisher(user_id, username)
     await show_profile_with_back(callback, user_id, "✅ <b>Registration successful!</b>")
     await callback.answer("Registered Successfully!")
-
-@router.callback_query(lambda c: c.data == "go_back")  # Yeh wahi go_back handler hai
-async def go_back_cb(callback: CallbackQuery):
-    # Yahan tumhara existing go_back logic rahega
-    await callback.message.edit_text(
-        "🏠 <b>Main Menu</b>",
-        reply_markup=keyboards.get_main_menu_keyboard(),
-        parse_mode="HTML"
-    )
-    await callback.answer()
