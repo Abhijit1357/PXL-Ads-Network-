@@ -26,6 +26,9 @@ async def main():
         earnings.router,
         inline_callbacks_router,
     )
+    # Delete any webhook to avoid conflict with polling
+    await bot.delete_webhook(drop_pending_updates=True)
+
     await bot.set_my_commands([
         BotCommand(command="start", description="Start the bot"),
         BotCommand(command="help", description="How this bot works"),
