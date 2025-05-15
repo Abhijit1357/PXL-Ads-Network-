@@ -10,7 +10,7 @@ def log_error(context, error):
     print(traceback.format_exc())
 
 # Register a new publisher
-async def register_publisher(user_id: int, username: str, bot_link: str):
+async def register_publisher(user_id: int, username: str, bot_link: str = ""):
     try:
         data = {
             "user_id": user_id,
@@ -24,6 +24,13 @@ async def register_publisher(user_id: int, username: str, bot_link: str):
         await publishers.update_one({"user_id": user_id}, {"$set": data}, upsert=True)
     except Exception as e:
         log_error("register_publisher", e)
+
+# Add or update bot link
+async def add_bot_link(user_id: int, bot_link: str):
+    try:
+        await publishers.update_one({"user_id": user_id}, {"$set": {"bot_link": bot_link}})
+    except Exception as e:
+        log_error("add_bot_link", e)
 
 # Get a publisher
 async def get_publisher(user_id: int):
@@ -126,10 +133,10 @@ async def is_registered_user(user_id: int):
         return False
 
 # Create profile if it doesn't exist
-async def create_profile_if_not_exists(user_id: int, username: str = "", bot_link: str = ""):
+async def create_profile_if_not_exists(user_id: int, username: str = ""):
     try:
         if not await is_registered_user(user_id):
-            await register_publisher(user_id, username, bot_link)
+            await register_publisher(user_id, username)
     except Exception as e:
         log_error("create_profile_if_not_exists", e)
 
