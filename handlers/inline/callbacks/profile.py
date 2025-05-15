@@ -5,10 +5,11 @@ import handlers.inline.keyboards as keyboards
 
 router = Router()
 
-async def show_user_profile(callback: CallbackQuery, user_id: int):
-    """Helper function to display user profile"""
+async def show_profile_with_back(callback: CallbackQuery, user_id: int, success_message: str = ""):
+    """Profile dikhane ka common function"""
     profile = await get_profile_data(user_id)
     text = (
+        f"{success_message}\n\n" if success_message else "" +
         f"👤 <b>Your Profile</b>\n"
         f"🆔 <b>User ID:</b> <code>{user_id}</code>\n"
         f"💸 <b>Earnings:</b> ₹{profile['earnings']}\n"
@@ -17,7 +18,7 @@ async def show_user_profile(callback: CallbackQuery, user_id: int):
     )
     await callback.message.edit_text(
         text,
-        reply_markup=keyboards.get_back_keyboard(),  # This adds the back button
+        reply_markup=keyboards.get_back_keyboard(),  # Yahi go_back wala keyboard use karega
         parse_mode="HTML"
     )
 
@@ -32,7 +33,7 @@ async def profile_cb(callback: CallbackQuery):
             parse_mode="HTML"
         )
     else:
-        await show_user_profile(callback, user_id)
+        await show_profile_with_back(callback, user_id)
     await callback.answer()
 
 @router.callback_query(lambda x: x.data == "register")
@@ -45,20 +46,15 @@ async def register_cb(callback: CallbackQuery):
         return
 
     await register_publisher(user_id, username)
-    
-    # Show profile directly with success message included
-    profile = await get_profile_data(user_id)
-    text = (
-        "✅ <b>Registration successful!</b>\n\n"
-        f"👤 <b>Your Profile</b>\n"
-        f"🆔 <b>User ID:</b> <code>{user_id}</code>\n"
-        f"💸 <b>Earnings:</b> ₹{profile['earnings']}\n"
-        f"👍 <b>Clicks:</b> {profile['clicks']}\n"
-        f"✅ <b>Approved:</b> {'Yes' if profile['approved'] else 'No'}"
-    )
+    await show_profile_with_back(callback, user_id, "✅ <b>Registration successful!</b>")
+    await callback.answer("Registered Successfully!")
+
+@router.callback_query(lambda c: c.data == "go_back")  # Yeh wahi go_back handler hai
+async def go_back_cb(callback: CallbackQuery):
+    # Yahan tumhara existing go_back logic rahega
     await callback.message.edit_text(
-        text,
-        reply_markup=keyboards.get_back_keyboard(),  # This ensures back button appears
+        "🏠 <b>Main Menu</b>",
+        reply_markup=keyboards.get_main_menu_keyboard(),
         parse_mode="HTML"
     )
-    await callback.answer("Registered Successfully!")
+    await callback.answer()
