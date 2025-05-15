@@ -1,6 +1,5 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 from config import MONGO_URI
-import ssl
 import certifi
 import logging
 from asyncio import sleep
@@ -19,14 +18,10 @@ async def init_db():
     global client, db, publishers, ads
     
     try:
-        # Create SSL context
-        ssl_context = ssl.create_default_context(cafile=certifi.where())
-        
         client = AsyncIOMotorClient(
             MONGO_URI,
             tls=True,
-            tlsInsecure=False,
-            ssl_context=ssl_context,
+            tlsCAFile=certifi.where(),
             connectTimeoutMS=10000,
             serverSelectionTimeoutMS=10000
         )
