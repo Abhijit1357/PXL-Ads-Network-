@@ -2,8 +2,8 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from config import MONGO_URI
 import ssl
 import certifi
-from urllib.parse import quote_plus
 import logging
+from asyncio import sleep
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -19,59 +19,36 @@ async def init_db():
     global client, db, publishers, ads
     
     try:
-        # Create SSL context for secure connection
+        # Create SSL context
         ssl_context = ssl.create_default_context(cafile=certifi.where())
         
-        # Configure client with timeout and retry options
         client = AsyncIOMotorClient(
             MONGO_URI,
             tls=True,
             tlsInsecure=False,
-            tlsAllowInvalidCertificates=False,
-            ssl_cert_reqs=ssl.CERT_REQUIRED,
             ssl_context=ssl_context,
             connectTimeoutMS=10000,
-            socketTimeoutMS=10000,
-            serverSelectionTimeoutMS=10000,
-            retryWrites=True,
-            retryReads=True,
-            maxPoolSize=100,
-            minPoolSize=10
+            serverSelectionTimeoutMS=10000
         )
 
         # Verify connection
         await client.admin.command('ping')
         
-        # Get database name from URI or use default
+        # Get database name
         db_name = MONGO_URI.split("/")[-1].split("?")[0]
         db = client.get_database(db_name if db_name else "pxl_ads_db")
         
-        # Initialize collections
         publishers = db["publishers"]
         ads = db["ads"]
         
-        # Create indexes if they don't exist
-        await publishers.create_index("user_id", unique=True)
-        await ads.create_index("owner")
-        await ads.create_index("approved")
-        
-        logger.info("[MongoDB] Connected successfully with indexes created.")
+        logger.info("✅ MongoDB connected successfully")
         
     except Exception as e:
-        logger.error(f"[MongoDB] Connection Error: {str(e)}")
-        # Implement retry logic or graceful degradation
-        raise RetryAfter(5)  # Wait 5 seconds before retrying
+        logger.error(f"❌ MongoDB connection failed: {e}")
+        await sleep(5)  # Wait before retrying
+        raise
 
 async def close_db():
-    global client
     if client:
         client.close()
-        logger.info("[MongoDB] Connection closed gracefully.")
-
-# Helper function for safe ObjectId conversion
-def to_objectid(id_str):
-    from bson import ObjectId
-    try:
-        return ObjectId(id_str)
-    except:
-        return None
+        logger.info("MongoDB connection closed")
