@@ -2,7 +2,6 @@ from aiogram import Router
 from aiogram.types import CallbackQuery
 from db.models import create_profile_if_not_exists
 from utils.logger import log_to_group
-from handlers.inline.keyboards import get_back_keyboard  # <-- Added import
 
 router = Router()
 
@@ -29,10 +28,8 @@ async def register_callback(callback: CallbackQuery):
 
     await log_to_group(callback.bot, log_msg)
 
-    # Edited text with back button
     await callback.message.edit_text(
         "✅ <b>Registration successful!</b>\nClick '👤 Profile' again to view your profile.",
-        reply_markup=get_back_keyboard(),
         parse_mode="HTML"
     )
     await callback.answer()
