@@ -17,7 +17,7 @@ async def show_user_profile(callback: CallbackQuery, user_id: int):
     )
     await callback.message.edit_text(
         text,
-        reply_markup=keyboards.get_back_keyboard(),
+        reply_markup=keyboards.get_back_keyboard(),  # This adds the back button
         parse_mode="HTML"
     )
 
@@ -46,12 +46,19 @@ async def register_cb(callback: CallbackQuery):
 
     await register_publisher(user_id, username)
     
-    # Show success message and profile immediately
-    await callback.message.edit_text(
+    # Show profile directly with success message included
+    profile = await get_profile_data(user_id)
+    text = (
         "✅ <b>Registration successful!</b>\n\n"
-        "Here's your profile:",
-        reply_markup=keyboards.get_back_keyboard(),
+        f"👤 <b>Your Profile</b>\n"
+        f"🆔 <b>User ID:</b> <code>{user_id}</code>\n"
+        f"💸 <b>Earnings:</b> ₹{profile['earnings']}\n"
+        f"👍 <b>Clicks:</b> {profile['clicks']}\n"
+        f"✅ <b>Approved:</b> {'Yes' if profile['approved'] else 'No'}"
+    )
+    await callback.message.edit_text(
+        text,
+        reply_markup=keyboards.get_back_keyboard(),  # This ensures back button appears
         parse_mode="HTML"
     )
-    await show_user_profile(callback, user_id)
-    await callback.answer()
+    await callback.answer("Registered Successfully!")
