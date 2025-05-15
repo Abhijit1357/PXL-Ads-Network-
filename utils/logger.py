@@ -1,4 +1,5 @@
-from aiogram.bot import Bot
+from __future__ import annotations
+from aiogram import Bot
 from config import LOG_GROUP_ID
 
 async def log_to_group(bot: Bot, message: str):
