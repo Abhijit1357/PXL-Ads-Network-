@@ -8,9 +8,9 @@ router = Router()
 @router.callback_query(lambda x: x.data == "profile")
 async def profile_cb(callback: CallbackQuery):
     user_id = callback.from_user.id
-    username = callback.from_user.username
-    await create_profile_if_not_exists(user_id, username)
+    username = callback.from_user.username or ""
     profile = await get_profile_data(user_id)
+    
     if profile:
         text = (
             f"👤 <b>Your Profile</b>\n"
@@ -24,9 +24,13 @@ async def profile_cb(callback: CallbackQuery):
             parse_mode="HTML"
         )
     else:
+        # Agar profile nahi mila to register karne ka button dikhayein
+        register_kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="📝 Register Now", callback_data="register")]
+        ])
         await callback.message.edit_text(
-            "⚠️ <b>Profile data not found.</b>\nPlease register first.",
-            reply_markup=keyboards.get_back_keyboard(),
+            "⚠️ <b>Profile data not found.</b>\nPlease register first by clicking below.",
+            reply_markup=register_kb,
             parse_mode="HTML"
         )
     await callback.answer()
