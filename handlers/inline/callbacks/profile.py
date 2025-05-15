@@ -1,6 +1,6 @@
 from aiogram import Router
 from aiogram.types import CallbackQuery
-from db.models import get_profile_data, is_registered_user
+from db.models import register_publisher, get_profile_data, is_registered_user
 import handlers.inline.keyboards as keyboards
 
 router = Router()
@@ -35,3 +35,31 @@ async def profile_cb(callback: CallbackQuery):
         parse_mode="HTML"
     )
     await callback.answer()
+
+
+@router.callback_query(lambda x: x.data == "register")
+async def register_cb(callback: CallbackQuery):
+    user_id = callback.from_user.id
+    username = callback.from_user.username or ""
+
+    await register_publisher(user_id, username)
+
+    profile = await get_profile_data(user_id)
+
+    text = (
+        "✅ <b>You have been successfully registered!</b>\n\n"
+        f"👤 <b>Your Profile</b>\n"
+        f"🆔 <b>User ID:</b> <code>{user_id}</code>\n"
+        f"💸 <b>Earnings:</b> ₹{profile['earnings']}\n"
+        f"👍 <b>Clicks:</b> {profile['clicks']}\n"
+        f"✅ <b>Approved:</b> {'Yes' if profile['approved'] else 'No'}"
+    )
+
+    reply_markup = keyboards.get_back_keyboard()
+
+    await callback.message.edit_text(
+        text,
+        reply_markup=reply_markup,
+        parse_mode="HTML"
+    )
+    await callback.answer("Registered Successfully!")
