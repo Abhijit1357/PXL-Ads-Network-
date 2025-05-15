@@ -1,6 +1,6 @@
 from aiogram import Router
 from aiogram.types import CallbackQuery
-from db.models import get_profile_data
+from db.models import get_profile_data, register_user, user_exists
 import handlers.inline.keyboards as keyboards
 
 router = Router()
@@ -9,7 +9,13 @@ router = Router()
 async def profile_cb(callback: CallbackQuery):
     user_id = callback.from_user.id
     username = callback.from_user.username or ""
-    
+
+    # Register if user not exists
+    if not await user_exists(user_id):
+        await register_user(user_id, username)
+        await callback.message.answer("✅ Registration successful!")
+
+    # Get profile data again after registration
     profile = await get_profile_data(user_id)
 
     if profile:
@@ -21,11 +27,12 @@ async def profile_cb(callback: CallbackQuery):
         )
         reply_markup = keyboards.get_back_keyboard()
     else:
+        # Shouldn't happen but as a fallback
         text = (
             "⚠️ <b>Profile not found.</b>\n"
-            "You need to register first to access your profile."
+            "Please try again later."
         )
-        reply_markup = keyboards.get_register_keyboard()
+        reply_markup = keyboards.get_back_keyboard()
 
     await callback.message.edit_text(
         text,
