@@ -1,6 +1,9 @@
-aiogram
-motor
-pydantic
+aiogram  # Modern async bot framework
+motor       # Async MongoDB driver
+pydantic    # Data validation
 python-dotenv
-aiohttp
-flask
+aiohttp     # Async HTTP client
+flask       # Web server (if needed for dashboard)
+certifi # SSL certificates
+apscheduler # Async task scheduling (optional)
+cachetools  # Caching support
