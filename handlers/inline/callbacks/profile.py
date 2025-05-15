@@ -6,10 +6,11 @@ import handlers.inline.keyboards as keyboards
 router = Router()
 
 async def show_profile_with_back(callback: CallbackQuery, user_id: int, success_msg: str = ""):
-    #"""Show profile with back button"""
+    #"""Fixed version with proper string concatenation and back button"""
     profile = await get_profile_data(user_id)
+    # Fixed string concatenation with proper parentheses
     text = (
-        f"{success_msg}\n\n" if success_msg else "" +
+        (f"{success_msg}\n\n" if success_msg else "") +  
         f"👤 <b>Your Profile</b>\n"
         f"🆔 <b>User ID:</b> <code>{user_id}</code>\n"
         f"💸 <b>Earnings:</b> ₹{profile['earnings']}\n"
@@ -18,7 +19,7 @@ async def show_profile_with_back(callback: CallbackQuery, user_id: int, success_
     )
     await callback.message.edit_text(
         text,
-        reply_markup=keyboards.get_back_keyboard(),  # Back button always shown
+        reply_markup=keyboards.get_back_keyboard(),  # Back button guaranteed
         parse_mode="HTML"
     )
 
@@ -28,7 +29,8 @@ async def profile_cb(callback: CallbackQuery):
     if not await is_registered_user(user_id):
         await callback.message.edit_text(
             "⚠️ <b>Register First</b>\nClick Register to continue",
-            reply_markup=keyboards.get_register_keyboard()
+            reply_markup=keyboards.get_register_keyboard(),
+            parse_mode="HTML"
         )
     else:
         await show_profile_with_back(callback, user_id)
@@ -40,13 +42,13 @@ async def register_cb(callback: CallbackQuery):
         user_id = callback.from_user.id
         username = callback.from_user.username or ""
         
-        # If already registered - show profile directly
+        # Check if already registered
         if await is_registered_user(user_id):
             await show_profile_with_back(callback, user_id)
-            await callback.answer("✓ Already Registered")
+            await callback.answer("✓ You're already registered")
             return
             
-        # New registration
+        # Process new registration
         await register_publisher(user_id, username)
         await show_profile_with_back(
             callback, 
@@ -57,4 +59,4 @@ async def register_cb(callback: CallbackQuery):
         
     except Exception as e:
         print(f"Registration Error: {e}")
-        await callback.answer("⚠️ Registration Failed", show_alert=True)
+        await callback.answer("⚠️ Registration failed. Please try again.", show_alert=True)
