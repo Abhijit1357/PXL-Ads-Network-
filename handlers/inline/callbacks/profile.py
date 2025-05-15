@@ -38,19 +38,37 @@ async def profile_cb(callback: CallbackQuery):
 
 @router.callback_query(lambda x: x.data == "register")
 async def register_cb(callback: CallbackQuery):
-    user_id = callback.from_user.id
-    username = callback.from_user.username or ""
+    try:
+        user_id = callback.from_user.id
+        username = callback.from_user.username or ""
 
-    if await is_registered_user(user_id):
-        await callback.answer("You are already registered.", show_alert=True)
-        return
+        # Check registration status first
+        if await is_registered_user(user_id):
+            if "already registered" not in callback.message.text:  # Prevent duplicate alerts
+                await callback.answer("✓ You're already registered", show_alert=True)
+            return
 
-    await register_publisher(user_id, username)
+        # Perform registration
+        await register_publisher(user_id, username)
+        
+        # Build success message with profile
+        profile_text = (
+            "✅ <b>Registration Successful!</b>\n\n"
+            f"👤 <b>Your Profile</b>\n"
+            f"🆔 ID: <code>{user_id}</code>\n"
+            f"💸 Earnings: ₹{(await get_profile_data(user_id))['earnings']}"
+        )
+        
+        # Only edit if content changed
+        if profile_text != callback.message.text:
+            await callback.message.edit_text(
+                profile_text,
+                reply_markup=keyboards.get_back_keyboard(),
+                parse_mode="HTML"
+            )
 
-    await callback.message.edit_text(
-        "✅ <b>Registration successful!</b>",
-        reply_markup=keyboards.get_back_keyboard(),
-        parse_mode="HTML"
-    )
+        await callback.answer("🎉 Registration complete!")
 
-    await callback.answer("Registered Successfully!")
+    except Exception as e:
+        print(f"Registration Error: {e}")
+        await callback.answer("⚠️ Registration failed. Please try again.", show_alert=True)
