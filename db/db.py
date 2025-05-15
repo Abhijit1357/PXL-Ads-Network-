@@ -3,16 +3,14 @@ from config import MONGO_URI
 
 try:
     client = AsyncIOMotorClient(MONGO_URI)
-    db = client.get_default_database() or client["pxl_ads_db"]
 
-    # Collections
+    db_name = MONGO_URI.split("/")[-1].split("?")[0]
+    db = client[db_name if db_name else "pxl_ads_db"]
+
     publishers = db["publishers"]
     ads = db["ads"]
 
     print("[MongoDB] Connected successfully.")
 except Exception as e:
     print(f"[MongoDB] Connection Error: {e}")
-    client = None
-    db = None
-    publishers = None
-    ads = None
+    client = db = publishers = ads = None
