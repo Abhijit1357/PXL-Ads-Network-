@@ -1,6 +1,6 @@
 from aiogram import Router
 from aiogram.types import CallbackQuery
-from db.models import get_profile_data, register_user, user_exists
+from db.models import get_profile_data, create_profile_if_not_exists
 import handlers.inline.keyboards as keyboards
 
 router = Router()
@@ -10,24 +10,22 @@ async def profile_cb(callback: CallbackQuery):
     user_id = callback.from_user.id
     username = callback.from_user.username or ""
 
-    # Register if user not exists
-    if not await user_exists(user_id):
-        await register_user(user_id, username)
-        await callback.message.answer("✅ Registration successful!")
+    # Ensure profile exists or create if new user
+    await create_profile_if_not_exists(user_id, username)
 
-    # Get profile data again after registration
+    # Get updated profile
     profile = await get_profile_data(user_id)
 
     if profile:
         text = (
             f"👤 <b>Your Profile</b>\n"
             f"🆔 <b>User ID:</b> <code>{user_id}</code>\n"
-            f"💸 <b>Earnings:</b> ₹{profile.get('earnings', 0)}\n"
-            f"👍 <b>Clicks:</b> {profile.get('clicks', 0)}"
+            f"💸 <b>Earnings:</b> ₹{profile['earnings']}\n"
+            f"👍 <b>Clicks:</b> {profile['clicks']}\n"
+            f"✅ <b>Approved:</b> {'Yes' if profile['approved'] else 'No'}"
         )
         reply_markup = keyboards.get_back_keyboard()
     else:
-        # Shouldn't happen but as a fallback
         text = (
             "⚠️ <b>Profile not found.</b>\n"
             "Please try again later."
