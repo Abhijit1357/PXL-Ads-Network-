@@ -9,7 +9,7 @@ async def show_profile_with_back(callback: CallbackQuery, user_id: int, success_
     """Profile dikhane ka common function"""
     profile = await get_profile_data(user_id)
     text = (
-        f"{success_message}\n\n" if success_message else "" +
+        (f"{success_message}\n\n" if success_message else "") +  # Parentheses added here
         f"👤 <b>Your Profile</b>\n"
         f"🆔 <b>User ID:</b> <code>{user_id}</code>\n"
         f"💸 <b>Earnings:</b> ₹{profile['earnings']}\n"
@@ -18,7 +18,7 @@ async def show_profile_with_back(callback: CallbackQuery, user_id: int, success_
     )
     await callback.message.edit_text(
         text,
-        reply_markup=keyboards.get_back_keyboard(),  # Yahi go_back wala keyboard use karega
+        reply_markup=keyboards.get_back_keyboard(),  # Back button keyboard
         parse_mode="HTML"
     )
 
