@@ -1,6 +1,6 @@
 import asyncio
 import os
-import logging  # <-- Add this
+import logging
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
@@ -10,6 +10,7 @@ from config import BOT_TOKEN
 from handlers import start, advertiser, admin, earnings
 from handlers.inline.callbacks import inline_callbacks_router
 from flask import Flask
+from db.db import init_db  # Import your MongoDB init function
 
 # Logging configuration
 logging.basicConfig(
@@ -25,8 +26,12 @@ def index():
     return "Bot is running..."
 
 async def main():
+    # Initialize MongoDB connection before starting bot
+    await init_db()
+
     bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher(storage=MemoryStorage())
+
     dp.include_routers(
         start.router,
         advertiser.router,
@@ -34,6 +39,7 @@ async def main():
         earnings.router,
         inline_callbacks_router,
     )
+
     await bot.delete_webhook(drop_pending_updates=True)
 
     await bot.set_my_commands([
@@ -43,11 +49,13 @@ async def main():
         BotCommand(command="submit_ad", description="Submit an ad"),
         BotCommand(command="register_bot", description="Register your bot to earn")
     ])
+
     print("Bot is running...")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
     import threading
+    # Run Flask app in a separate thread
     threading.Thread(
         target=lambda: app.run(
             host='0.0.0.0',
@@ -55,4 +63,6 @@ if __name__ == "__main__":
             use_reloader=False
         )
     ).start()
+
+    # Run async bot main loop
     asyncio.run(main())
