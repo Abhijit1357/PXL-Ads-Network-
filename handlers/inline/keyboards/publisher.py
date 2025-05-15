@@ -7,8 +7,3 @@ def get_publisher_panel_keyboard():
         [InlineKeyboardButton(text="💳 Withdraw", callback_data="withdraw")],
         [InlineKeyboardButton(text="◀️ Back", callback_data="go_back")]
     ])
-
-def get_register_keyboard():
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="✅ Accept & Register", callback_data="register_accept")]
-    ])
