@@ -40,6 +40,10 @@ async def get_publisher(user_id: int):
         log_error("get_publisher", e)
         return None
 
+# get_profile alias (required by other files)
+async def get_profile(user_id: int):
+    return await get_publisher(user_id)
+
 # Approve a publisher
 async def approve_publisher(user_id: int):
     try:
