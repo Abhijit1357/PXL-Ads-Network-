@@ -30,9 +30,14 @@ async def register_callback(callback: CallbackQuery):
     await log_to_group(callback.bot, log_msg)
 
     # Edited text with back button
+      # Show profile DIRECTLY after registration
     await callback.message.edit_text(
-        "✅ <b>Registration successful!</b>\nClick '👤 Profile' again to view your profile.",
-        reply_markup=get_back_keyboard(),
+        f"✅ <b>Registration Successful!</b>\n\n"
+        f"👤 <b>Your Profile</b>\n"
+        f"🆔 ID: <code>{user_id}</code>\n"
+        f"💸 Earnings: ₹{profile['earnings']}\n"
+        f"👍 Clicks: {profile['clicks']}",
+        reply_markup=get_back_keyboard(),  # Back button still included
         parse_mode="HTML"
     )
     await callback.answer()
