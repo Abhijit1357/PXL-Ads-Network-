@@ -29,7 +29,7 @@ async def register_callback(callback: CallbackQuery):
         )
         await log_to_group(callback.bot, log_msg)
 
-        # Show profile
+        # Show profile directly
         await callback.message.edit_text(
             f"✅ <b>Registration Successful!</b>\n\n"
             f"👤 <b>Your Profile</b>\n"
@@ -39,13 +39,18 @@ async def register_callback(callback: CallbackQuery):
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
         )
-        await callback.answer("🎉 Welcome!")
+        await callback.answer("🎉 Registered!")
 
     except Exception as e:
-        print(f"Registration Error: {e}")
+        # Detailed logging
+        error_msg = f"Registration Error for user {user_id}: {str(e)}"
+        print(error_msg)
+        await log_to_group(callback.bot, error_msg)  # Log to Telegram group for visibility
+
+        # Show user-friendly error
         await callback.message.edit_text(
             "⚠️ <b>Registration failed.</b>\nPlease try again.",
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
         )
-        await callback.answer("⚠️ Error occurred.", show_alert=True)
+        await callback.answer("⚠️ Registration failed.", show_alert=True)
