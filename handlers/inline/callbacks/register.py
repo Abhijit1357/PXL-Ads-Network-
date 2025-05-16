@@ -3,6 +3,7 @@ from aiogram.types import CallbackQuery
 from db.models import create_profile_if_not_exists, get_profile
 from utils.logger import log_to_group
 from handlers.inline.keyboards import get_back_keyboard
+import asyncio
 
 router = Router()
 
@@ -15,8 +16,14 @@ async def register_callback(callback: CallbackQuery):
         # Create profile if not exists
         await create_profile_if_not_exists(user_id, username)
 
-        # Fetch profile from DB
-        profile = await get_profile(user_id)
+        # Retry fetching profile up to 3 times in case of MongoDB write delay
+        profile = None
+        for _ in range(3):
+            profile = await get_profile(user_id)
+            if profile:
+                break
+            await asyncio.sleep(0.5)  # Wait for 500ms before retry
+
         if not profile:
             raise ValueError("Profile not found after creation")
 
