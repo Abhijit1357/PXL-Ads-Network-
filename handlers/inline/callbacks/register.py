@@ -1,8 +1,8 @@
 from aiogram import Router
 from aiogram.types import CallbackQuery
-from db.models import create_profile_if_not_exists
+from db.models import create_profile_if_not_exists, get_profile  # <-- Added get_profile
 from utils.logger import log_to_group
-from handlers.inline.keyboards import get_back_keyboard  # <-- Added import
+from handlers.inline.keyboards import get_back_keyboard
 
 router = Router()
 
@@ -11,9 +11,13 @@ async def register_callback(callback: CallbackQuery):
     user_id = callback.from_user.id
     username = callback.from_user.username or "NoUsername"
 
+    # Create profile if not exists
     await create_profile_if_not_exists(user_id, username)
 
-    # Proper logging message
+    # Fetch profile from DB
+    profile = await get_profile(user_id)  # <-- Fixed missing variable
+
+    # Log registration
     if username != "NoUsername":
         log_msg = (
             f"✅ New user registered!\n\n"
@@ -29,15 +33,14 @@ async def register_callback(callback: CallbackQuery):
 
     await log_to_group(callback.bot, log_msg)
 
-    # Edited text with back button
-      # Show profile DIRECTLY after registration
+    # Show profile directly
     await callback.message.edit_text(
         f"✅ <b>Registration Successful!</b>\n\n"
         f"👤 <b>Your Profile</b>\n"
         f"🆔 ID: <code>{user_id}</code>\n"
         f"💸 Earnings: ₹{profile['earnings']}\n"
         f"👍 Clicks: {profile['clicks']}",
-        reply_markup=get_back_keyboard(),  # Back button still included
+        reply_markup=get_back_keyboard(),
         parse_mode="HTML"
     )
     await callback.answer()
