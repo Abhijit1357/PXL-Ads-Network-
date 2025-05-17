@@ -46,23 +46,3 @@ async def profile_cb(callback: CallbackQuery):
     else:
         await show_profile_with_back(callback, user_id)
         await callback.answer()
-
-@router.callback_query(lambda x: x.data == "register")
-async def register_cb(callback: CallbackQuery):
-    try:
-        user_id = callback.from_user.id
-        username = callback.from_user.username or ""
-        if await is_registered_user(user_id):
-            await show_profile_with_back(callback, user_id)
-            return
-        await register_publisher(user_id, username)
-        await show_profile_with_back(callback, user_id, "✅ <b>Registration Successful!</b>")
-        await callback.answer("🎉 Welcome!")
-    except Exception as e:
-        print(f"Registration Error: {e}")
-        await callback.message.edit_text(
-            "⚠️ <b>Registration failed.</b>\nPlease try again.",
-            reply_markup=get_back_keyboard(),
-            parse_mode="HTML"
-        )
-        await callback.answer("⚠️ Registration failed.", show_alert=True)
