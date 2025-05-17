@@ -12,8 +12,15 @@ async def ensure_collections_initialized():
 
 async def register_publisher(user_id: int, username: str = "", bot_link: str = "") -> bool:
     """Atomic publisher registration with transaction"""
+    if not check_db_initialized():
+        logger.error("Database not initialized when trying to register publisher")
+        raise ConnectionError("Database not initialized")
+    
     try:
         await ensure_collections_initialized()
+        if client is None:
+            logger.error("MongoDB client is not initialized")
+            raise ConnectionError("MongoDB client is not initialized")
         
         async with await client.start_session() as session:
             async with session.start_transaction():
@@ -35,6 +42,9 @@ async def register_publisher(user_id: int, username: str = "", bot_link: str = "
                     session=session
                 )
                 return result.acknowledged
+    except Exception as e:
+        logger.error(f"Error registering publisher: {str(e)}")
+        raise
                 
     except Exception as e:
         error_msg = f"Publisher registration failed\nUser: {user_id}\nError: {str(e)}"
