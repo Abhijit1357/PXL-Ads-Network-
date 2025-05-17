@@ -38,7 +38,7 @@ async def profile_cb(callback: CallbackQuery):
     if not await is_registered_user(user_id):
         await callback.message.edit_text(
             "⚠️ <b>Register First</b>\nClick Register to continue",
-            reply_markup=get_register_keyboard(user_id=callback.from_user.id),
+            reply_markup=await get_register_keyboard(user_id=callback.from_user.id),
             parse_mode="HTML"
         )
         await callback.answer()
