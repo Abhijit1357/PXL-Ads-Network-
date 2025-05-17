@@ -52,20 +52,12 @@ async def register_cb(callback: CallbackQuery):
     try:
         user_id = callback.from_user.id
         username = callback.from_user.username or ""
-
         if await is_registered_user(user_id):
             await show_profile_with_back(callback, user_id)
-            await callback.answer("✓ You're already registered")
             return
-
         await register_publisher(user_id, username)
-        await show_profile_with_back(
-            callback,
-            user_id,
-            "✅ <b>Registration Successful!</b>"
-        )
+        await show_profile_with_back(callback, user_id, "✅ <b>Registration Successful!</b>")
         await callback.answer("🎉 Welcome!")
-
     except Exception as e:
         print(f"Registration Error: {e}")
         await callback.message.edit_text(
