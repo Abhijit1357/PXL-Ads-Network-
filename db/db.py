@@ -16,14 +16,14 @@ client = None
 db = None
 publishers = None
 ads = None
-db_initialized = False  # Track initialization status
+db_initialized = False
 
 async def init_db():
     """Initialize database connection with retry logic"""
     global client, db, publishers, ads, db_initialized
     
-    max_retries = 3
-    retry_delay = 5
+    max_retries = 5
+    retry_delay = 3
     
     for attempt in range(max_retries):
         try:
@@ -31,49 +31,54 @@ async def init_db():
                 MONGO_URI,
                 tls=True,
                 tlsCAFile=certifi.where(),
-                connectTimeoutMS=10000,
-                serverSelectionTimeoutMS=10000,
+                connectTimeoutMS=15000,
+                serverSelectionTimeoutMS=15000,
                 retryWrites=True,
-                retryReads=True
+                retryReads=True,
+                socketTimeoutMS=30000
             )
             
             # Verify connection
             await client.admin.command('ping')
             
-            # Get database name
+            # Get database
             db_name = MONGO_URI.split("/")[-1].split("?")[0]
             db = client.get_database(db_name if db_name else "pxl_ads_db")
             
-            # Initialize collections
-            publishers = db["publishers"]
-            ads = db["ads"]
+            # Initialize collections with validation
+            if 'publishers' not in await db.list_collection_names():
+                await db.create_collection('publishers')
+            if 'ads' not in await db.list_collection_names():
+                await db.create_collection('ads')
+                
+            publishers = db['publishers']
+            ads = db['ads']
             
             # Create indexes
-            await publishers.create_index("user_id", unique=True)
-            await ads.create_index("owner")
-            await ads.create_index("approved")
+            await publishers.create_index([("user_id", 1)], unique=True)
+            await ads.create_index([("owner", 1)])
+            await ads.create_index([("approved", 1)])
             
             logger.info("✅ MongoDB connected successfully")
             db_initialized = True
             return True
             
         except Exception as e:
-            logger.error(f"❌ MongoDB connection failed (attempt {attempt + 1}/{max_retries}): {e}")
+            logger.error(f"❌ Connection attempt {attempt+1}/{max_retries} failed: {str(e)}")
             if attempt < max_retries - 1:
                 await sleep(retry_delay)
                 continue
-            db_initialized = False
             raise
 
 async def close_db():
-    """Close database connection"""
+    """Properly close database connection"""
     global client, db_initialized
     if client:
         try:
             client.close()
             logger.info("MongoDB connection closed")
         except Exception as e:
-            logger.error(f"Error closing MongoDB connection: {e}")
+            logger.error(f"Error closing connection: {str(e)}")
         finally:
             client = None
             db = None
@@ -82,11 +87,8 @@ async def close_db():
             db_initialized = False
 
 def check_db_initialized():
-    """Check if database is properly initialized"""
-    if not db_initialized:
-        logger.error("Database not initialized! Call init_db() first")
-        return False
-    if None in [client, db, publishers, ads]:
-        logger.error("Database components not properly initialized")
+    """Verify database is ready for operations"""
+    if not db_initialized or None in [client, db, publishers, ads]:
+        logger.error("Database not properly initialized")
         return False
     return True
