@@ -1,6 +1,6 @@
 from aiogram import Router
 from aiogram.types import CallbackQuery
-from handlers.inline.keyboards.publisher import get_publisher_panel_keyboard, get_register_keyboard
+from handlers.inline.keyboards import get_publisher_panel_keyboard, get_register_keyboard
 from db.models import is_registered_user, create_profile_if_not_exists
 
 router = Router()
