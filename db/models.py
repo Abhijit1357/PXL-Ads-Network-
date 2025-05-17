@@ -114,7 +114,7 @@ async def get_random_ad(exclude_owner: Optional[int] = None) -> Optional[Dict[st
         pipeline = [{"$match": {"approved": True}}]
         
         if exclude_owner:
-            pipeline.append({"$match": {"owner": {"$ne": exclude_owner}})
+            pipeline.append({"$match": {"owner": {"$ne": exclude_owner}}})
         
         pipeline.append({"$sample": {"size": 1}})
         
