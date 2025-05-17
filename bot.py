@@ -12,7 +12,7 @@ from handlers.inline.callbacks import inline_callbacks_router
 from flask import Flask
 from db.db import init_db  # Import your MongoDB init function
 
-# Logging configuration
+Logging configuration
 logging.basicConfig(
     level=logging.WARNING,
     format="%(levelname)s:%(name)s:%(message)s"
@@ -26,12 +26,17 @@ def index():
     return "Bot is running..."
 
 async def main():
-    # Initialize MongoDB connection before starting bot
-    await init_db()
+    try:
+        # Initialize MongoDB connection before starting bot
+        await init_db()
+        print("init_db function successfully completed")
+        logging.info("Database initialized successfully")
+    except Exception as e:
+        print(f"Error in init_db function: {str(e)}")
+        logging.error(f"Error initializing database: {str(e)}")
 
     bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dp = Dispatcher(storage=MemoryStorage())
-
     dp.include_routers(
         start.router,
         advertiser.router,
@@ -39,9 +44,7 @@ async def main():
         earnings.router,
         inline_callbacks_router,
     )
-
     await bot.delete_webhook(drop_pending_updates=True)
-
     await bot.set_my_commands([
         BotCommand(command="start", description="Start the bot"),
         BotCommand(command="help", description="How this bot works"),
@@ -49,7 +52,6 @@ async def main():
         BotCommand(command="submit_ad", description="Submit an ad"),
         BotCommand(command="register_bot", description="Register your bot to earn")
     ])
-
     print("Bot is running...")
     await dp.start_polling(bot)
 
@@ -63,6 +65,5 @@ if __name__ == "__main__":
             use_reloader=False
         )
     ).start()
-
     # Run async bot main loop
     asyncio.run(main())
