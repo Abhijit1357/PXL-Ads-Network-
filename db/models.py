@@ -38,7 +38,7 @@ async def register_publisher(user_id: int, username: str = "", bot_link: str = "
                 
     except Exception as e:
         error_msg = f"Publisher registration failed\nUser: {user_id}\nError: {str(e)}"
-        await log_to_group(error_msg)
+        await log_to_group(user_id, error_msg)
         traceback.print_exc()
         return False
 
@@ -88,7 +88,7 @@ async def create_profile_if_not_exists(user_id: int, username: str = "") -> bool
         
     except Exception as e:
         error_msg = f"Profile creation failed\nUser: {user_id}\nError: {str(e)}"
-        await log_to_group(error_msg)
+        await log_to_group(user_id, error_msg)
         return False
 
 # ... [keep all other existing functions but ensure they use ensure_collections_initialized
