@@ -9,15 +9,12 @@ router = Router()
 async def publisher_panel_cb(callback: CallbackQuery):
     user_id = callback.from_user.id
     username = callback.from_user.username
-
-    # Ensure profile exists
     await create_profile_if_not_exists(user_id, username)
-
-    # Check registration
     if not await is_registered_user(user_id):
         await callback.message.edit_text(
             "⚠️ You are not registered yet.\nPlease accept the Privacy Policy to continue.",
-            reply_markup=get_register_keyboard()
+            reply_markup=get_register_keyboard(),
+            parse_mode="HTML"
         )
     else:
         await callback.message.edit_text(
@@ -25,5 +22,4 @@ async def publisher_panel_cb(callback: CallbackQuery):
             reply_markup=get_publisher_panel_keyboard(),
             parse_mode="HTML"
         )
-
     await callback.answer()
