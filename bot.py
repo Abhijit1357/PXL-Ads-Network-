@@ -12,7 +12,7 @@ from handlers.inline.callbacks import inline_callbacks_router
 from flask import Flask
 from db.db import init_db  # Import your MongoDB init function
 
-Logging configuration
+#Logging configuration
 logging.basicConfig(
     level=logging.WARNING,
     format="%(levelname)s:%(name)s:%(message)s"
