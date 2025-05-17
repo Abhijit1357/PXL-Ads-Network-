@@ -13,28 +13,42 @@ async def ensure_collections_initialized():
 
 async def register_publisher(user_id: int, username: str = "", bot_link: str = "") -> bool:
     """
-    Register a new publisher or update existing one
+    Register a new publisher with transaction support
     Returns True if successful, False otherwise
     """
     try:
         await ensure_collections_initialized()
-        data = {
-            "user_id": user_id,
-            "username": username,
-            "bot_link": bot_link,
-            "approved": False,
-            "earnings": 0,
-            "clicks": 0,
-            "joined": datetime.utcnow()
-        }
-        result = await publishers.update_one(
-            {"user_id": user_id},
-            {"$setOnInsert": data},
-            upsert=True
-        )
-        return result.upserted_id is not None
+        
+        # Use transaction for atomic operation
+        async with await client.start_session() as session:
+            async with session.start_transaction():
+                # Check if user exists first
+                existing = await publishers.find_one(
+                    {"user_id": user_id},
+                    session=session
+                )
+                if existing:
+                    return False  # Already exists
+                
+                # Create new profile
+                result = await publishers.insert_one(
+                    {
+                        "user_id": user_id,
+                        "username": username,
+                        "bot_link": bot_link,
+                        "approved": False,
+                        "earnings": 0,
+                        "clicks": 0,
+                        "joined": datetime.utcnow()
+                    },
+                    session=session
+                )
+                return result.inserted_id is not None
+                
     except Exception as e:
-        await log_to_group(f"⚠️ Publisher Registration Failed\nUser: {user_id}\nError: {str(e)}")
+        error_msg = f"Publisher Registration Failed\nUser: {user_id}\nError: {str(e)}"
+        print(error_msg)
+        await log_to_group(error_msg)
         traceback.print_exc()
         return False
 
