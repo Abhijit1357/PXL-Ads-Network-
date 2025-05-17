@@ -83,10 +83,30 @@ async def is_registered_user(user_id: int) -> bool:
         return False
 
 async def create_profile_if_not_exists(user_id: int, username: str = "") -> bool:
-    """Idempotent profile creation"""
-    if await is_registered_user(user_id):
+    """
+    Enhanced profile creation with verification
+    Returns:
+        True: if profile was created
+        False: if profile already exists or creation failed
+    """
+    try:
+        # First verify registration status
+        if await is_registered_user(user_id):
+            return False
+            
+        # Attempt creation
+        created = await register_publisher(user_id, username)
+        if not created:
+            return False
+            
+        # Verify creation was successful
+        return await is_registered_user(user_id)
+        
+    except Exception as e:
+        error_msg = f"Profile Creation Failed\nUser: {user_id}\nError: {str(e)}"
+        print(error_msg)
+        await log_to_group(error_msg)
         return False
-    return await register_publisher(user_id, username)
 
 async def get_profile_data(user_id: int) -> Dict[str, Any]:
     """Structured profile data with defaults"""
