@@ -13,7 +13,7 @@ async def publisher_panel_cb(callback: CallbackQuery):
     if not await is_registered_user(user_id):
         await callback.message.edit_text(
             "⚠️ You are not registered yet.\nPlease accept the Privacy Policy to continue.",
-            reply_markup=get_register_keyboard(user_id=callback.from_user.id),
+            reply_markup=await get_register_keyboard(user_id=callback.from_user.id),
             parse_mode="HTML"
         )
     else:
