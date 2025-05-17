@@ -78,7 +78,7 @@ async def register_callback(callback: CallbackQuery):
     finally:
         # Detailed error reporting to your log group
         if not registration_success and error_details:
-            await log_to_group(
+            await log_to_group(callback.bot,
                 f"🚨 REGISTRATION FAILED\n"
                 f"User ID: {user.id}\n"
                 f"Username: @{user.username if user.username else 'N/A'}\n"
@@ -88,7 +88,7 @@ async def register_callback(callback: CallbackQuery):
         
         # Success logging
         if registration_success:
-            await log_to_group(
+            await log_to_group(callback.bot,
                 f"✅ NEW REGISTRATION\n"
                 f"ID: {user.id}\n"
                 f"Name: {user.full_name}\n"
