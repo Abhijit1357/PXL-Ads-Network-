@@ -1,36 +1,27 @@
-from db.db import publishers, ads
+from db.db import publishers, ads, client, check_db_initialized
 from datetime import datetime
-import random
 from bson import ObjectId
 from typing import Optional, Dict, Any
 import traceback
 from utils.logger import log_to_group
 
 async def ensure_collections_initialized():
-    """Verify collections are available before operations"""
-    if publishers is None or ads is None:
-        raise RuntimeError("Database collections not initialized")
+    """Enhanced collection verification"""
+    if not check_db_initialized():
+        raise RuntimeError("Database not ready for operations")
 
 async def register_publisher(user_id: int, username: str = "", bot_link: str = "") -> bool:
-    """
-    Register a new publisher with transaction support
-    Returns True if successful, False otherwise
-    """
+    """Atomic publisher registration with transaction"""
     try:
         await ensure_collections_initialized()
         
-        # Use transaction for atomic operation
         async with await client.start_session() as session:
             async with session.start_transaction():
-                # Check if user exists first
-                existing = await publishers.find_one(
-                    {"user_id": user_id},
-                    session=session
-                )
-                if existing:
-                    return False  # Already exists
+                # Check existence first
+                if await publishers.find_one({"user_id": user_id}, session=session):
+                    return False
                 
-                # Create new profile
+                # Insert new document
                 result = await publishers.insert_one(
                     {
                         "user_id": user_id,
@@ -43,11 +34,10 @@ async def register_publisher(user_id: int, username: str = "", bot_link: str = "
                     },
                     session=session
                 )
-                return result.inserted_id is not None
+                return result.acknowledged
                 
     except Exception as e:
-        error_msg = f"Publisher Registration Failed\nUser: {user_id}\nError: {str(e)}"
-        print(error_msg)
+        error_msg = f"Publisher registration failed\nUser: {user_id}\nError: {str(e)}"
         await log_to_group(error_msg)
         traceback.print_exc()
         return False
@@ -83,30 +73,25 @@ async def is_registered_user(user_id: int) -> bool:
         return False
 
 async def create_profile_if_not_exists(user_id: int, username: str = "") -> bool:
-    """
-    Enhanced profile creation with verification
-    Returns:
-        True: if profile was created
-        False: if profile already exists or creation failed
-    """
+    """Idempotent profile creation with verification"""
     try:
-        # First verify registration status
+        # Fast check first
         if await is_registered_user(user_id):
             return False
             
         # Attempt creation
-        created = await register_publisher(user_id, username)
-        if not created:
+        if not await register_publisher(user_id, username):
             return False
             
-        # Verify creation was successful
+        # Verify creation
         return await is_registered_user(user_id)
         
     except Exception as e:
-        error_msg = f"Profile Creation Failed\nUser: {user_id}\nError: {str(e)}"
-        print(error_msg)
+        error_msg = f"Profile creation failed\nUser: {user_id}\nError: {str(e)}"
         await log_to_group(error_msg)
         return False
+
+# ... [keep all other existing functions but ensure they use ensure_collections_initialized
 
 async def get_profile_data(user_id: int) -> Dict[str, Any]:
     """Structured profile data with defaults"""
