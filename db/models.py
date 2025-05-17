@@ -129,20 +129,48 @@ async def get_earnings(user_id: int):
         return 0
 
 # Check if user is registered
-async def is_registered_user(user_id: int):
+async def is_registered_user(user_id: int) -> bool:
+    """
+    Check if user is registered with proper error handling and logging.
+    Returns:
+        bool: True if user exists, False if not or on error
+    """
     try:
-        return await publishers.find_one({"user_id": user_id}) is not None
+        # More efficient query - only check for existence without fetching full document
+        user_exists = await publishers.find_one(
+            {"user_id": user_id},
+            projection={"_id": 1}  # Only return _id field if exists
+        )
+        return user_exists is not None
     except Exception as e:
-        log_error("is_registered_user", e)
-        return False
+        log_error(f"is_registered_user failed for user {user_id}", e)
+        return False  # Assume not registered if there's an error
 
-# Create profile if it doesn't exist
-async def create_profile_if_not_exists(user_id: int, username: str = ""):
+async def create_profile_if_not_exists(user_id: int, username: str = "") -> bool:
+    """
+    Create profile only if it doesn't exist, with verification.
+    Returns:
+        bool: True if profile was created, False if already existed or failed
+    """
     try:
-        if not await is_registered_user(user_id):
-            await register_publisher(user_id, username)
+        # First check with proper error handling
+        if await is_registered_user(user_id):
+            return False  # Already exists
+            
+        # Create new profile
+        await register_publisher(user_id, username)
+        
+        # Verify creation was successful
+        if await is_registered_user(user_id):
+            return True
+            
+        # If we get here, creation failed
+        log_error(f"Profile creation failed for user {user_id}", "No error but profile not found")
+        return False
+        
     except Exception as e:
-        log_error("create_profile_if_not_exists", e)
+        log_error(f"create_profile_if_not_exists failed for user {user_id}", e)
+        return False
 
 # Get profile data
 async def get_profile_data(user_id: int):
