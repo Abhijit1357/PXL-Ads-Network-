@@ -37,12 +37,12 @@ async def show_profile_with_back(callback: CallbackQuery, user_id: int, success_
 async def profile_cb(callback: CallbackQuery):
     user_id = callback.from_user.id
     if not await is_registered_user(user_id):
+        keyboard = await get_register_keyboard(user_id)  # Will be None if registered
         await callback.message.edit_text(
             "⚠️ <b>Register First</b>\nClick Register to continue",
-            reply_markup=get_register_keyboard(),
+            reply_markup=keyboard,  # None means no buttons will show
             parse_mode="HTML"
         )
-        await callback.answer()
     else:
         await show_profile_with_back(callback, user_id)
-        await callback.answer()
+    await callback.answer()
