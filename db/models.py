@@ -10,7 +10,7 @@ def log_error(context, error):
     print(traceback.format_exc())
 
 # Register a new publisher
-async def register_publisher(user_id: int, username: str, bot_link: str = ""):
+async def register_publisher(user_id: int, username: str = "", bot_link: str = ""):
     try:
         data = {
             "user_id": user_id,
