@@ -1,128 +1,60 @@
-from db.db import publishers, ads, client, check_db_initialized
+from db.db import publishers, ads
 from datetime import datetime
+import random
 from bson import ObjectId
-from typing import Optional, Dict, Any
 import traceback
-from utils.logger import log_to_group
 
-async def ensure_collections_initialized():
-    """Enhanced collection verification"""
-    if not check_db_initialized():
-        raise RuntimeError("Database not ready for operations")
+# Utility for error logging
+def log_error(context, error):
+    print(f"[Error - {context}] {error}")
+    print(traceback.format_exc())
 
-async def register_publisher(user_id: int, username: str = "", bot_link: str = "") -> bool:
-    """Atomic publisher registration with transaction"""
-    if not check_db_initialized():
-        logger.error("Database not initialized when trying to register publisher")
-        raise ConnectionError("Database not initialized")
-    
+# Register a new publisher
+async def register_publisher(user_id: int, username: str, bot_link: str = ""):
     try:
-        await ensure_collections_initialized()
-        if client is None:
-            logger.error("MongoDB client is not initialized")
-            raise ConnectionError("MongoDB client is not initialized")
-        
-        async with await client.start_session() as session:
-            async with session.start_transaction():
-                # Check existence first
-                if await publishers.find_one({"user_id": user_id}, session=session):
-                    return False
-                
-                # Insert new document
-                result = await publishers.insert_one(
-                    {
-                        "user_id": user_id,
-                        "username": username,
-                        "bot_link": bot_link,
-                        "approved": False,
-                        "earnings": 0,
-                        "clicks": 0,
-                        "joined": datetime.utcnow()
-                    },
-                    session=session
-                )
-                return result.acknowledged
+        data = {
+            "user_id": user_id,
+            "username": username,
+            "bot_link": bot_link,
+            "approved": False,
+            "earnings": 0,
+            "clicks": 0,
+            "joined": datetime.utcnow()
+        }
+        await publishers.update_one({"user_id": user_id}, {"$set": data}, upsert=True)
     except Exception as e:
-        logger.error(f"Error registering publisher: {str(e)}")
-        raise
-                
-    except Exception as e:
-        error_msg = f"Publisher registration failed\nUser: {user_id}\nError: {str(e)}"
-        await log_to_group(user_id, error_msg)
-        traceback.print_exc()
-        return False
+        log_error("register_publisher", e)
 
-async def get_publisher(user_id: int) -> Optional[Dict[str, Any]]:
-    """Get publisher data with proper error handling"""
+# Add or update bot link
+async def add_bot_link(user_id: int, bot_link: str):
     try:
-        await ensure_collections_initialized()
+        await publishers.update_one({"user_id": user_id}, {"$set": {"bot_link": bot_link}})
+    except Exception as e:
+        log_error("add_bot_link", e)
+
+# Get a publisher
+async def get_publisher(user_id: int):
+    try:
         return await publishers.find_one({"user_id": user_id})
     except Exception as e:
-        await log_to_group(f"⚠️ Failed to get publisher\nUser: {user_id}\nError: {str(e)}")
+        log_error("get_publisher", e)
         return None
 
-async def update_publisher(user_id: int, update_data: Dict[str, Any]) -> bool:
-    """Generic publisher update method"""
+# get_profile alias (required by other files)
+async def get_profile(user_id: int):
+    return await get_publisher(user_id)
+
+# Approve a publisher
+async def approve_publisher(user_id: int):
     try:
-        await ensure_collections_initialized()
-        result = await publishers.update_one(
-            {"user_id": user_id},
-            {"$set": update_data}
-        )
-        return result.modified_count > 0
+        await publishers.update_one({"user_id": user_id}, {"$set": {"approved": True}})
     except Exception as e:
-        await log_to_group(f"⚠️ Publisher Update Failed\nUser: {user_id}\nError: {str(e)}")
-        return False
+        log_error("approve_publisher", e)
 
-async def is_registered_user(user_id: int) -> bool:
-    """Efficient check for user registration"""
+# Submit a new ad
+async def submit_ad(user_id: int, ad_text: str, link: str):
     try:
-        await ensure_collections_initialized()
-        return await publishers.count_documents({"user_id": user_id}, limit=1) > 0
-    except Exception:
-        return False
-
-async def create_profile_if_not_exists(user_id: int, username: str = "") -> bool:
-    """Idempotent profile creation with verification"""
-    try:
-        # Fast check first
-        if await is_registered_user(user_id):
-            return False
-            
-        # Attempt creation
-        if not await register_publisher(user_id, username):
-            return False
-            
-        # Verify creation
-        return await is_registered_user(user_id)
-        
-    except Exception as e:
-        error_msg = f"Profile creation failed\nUser: {user_id}\nError: {str(e)}"
-        await log_to_group(user_id, error_msg)
-        return False
-
-# ... [keep all other existing functions but ensure they use ensure_collections_initialized
-
-async def get_profile_data(user_id: int) -> Dict[str, Any]:
-    """Structured profile data with defaults"""
-    publisher = await get_publisher(user_id)
-    if not publisher:
-        return {}
-    
-    return {
-        "earnings": publisher.get("earnings", 0),
-        "clicks": publisher.get("clicks", 0),
-        "approved": publisher.get("approved", False),
-        "bot_link": publisher.get("bot_link", ""),
-        "username": publisher.get("username", "")
-    }
-
-# Ad-related operations
-async def submit_ad(user_id: int, ad_text: str, link: str) -> Optional[ObjectId]:
-    """Submit new ad and return its ID"""
-    try:
-        await ensure_collections_initialized()
-        ad_data = {
+        data = {
             "owner": user_id,
             "text": ad_text,
             "link": link,
@@ -130,95 +62,100 @@ async def submit_ad(user_id: int, ad_text: str, link: str) -> Optional[ObjectId]
             "approved": False,
             "submitted_at": datetime.utcnow()
         }
-        result = await ads.insert_one(ad_data)
-        return result.inserted_id
+        await ads.insert_one(data)
     except Exception as e:
-        await log_to_group(f"⚠️ Ad Submission Failed\nUser: {user_id}\nError: {str(e)}")
+        log_error("submit_ad", e)
+
+# Get random approved ad
+async def get_random_ad(exclude_owner: int = None):
+    try:
+        query = {"approved": True}
+        if exclude_owner:
+            query["owner"] = {"$ne": exclude_owner}
+        ads_list = await ads.find(query).to_list(length=50)
+        return random.choice(ads_list) if ads_list else None
+    except Exception as e:
+        log_error("get_random_ad", e)
         return None
 
-async def get_ad_stats(ad_id: str) -> Optional[Dict[str, Any]]:
-    """Get advertisement statistics by ID"""
+# Approve ad
+async def approve_ad(ad_id: str):
     try:
-        await ensure_collections_initialized()
+        await ads.update_one({"_id": ObjectId(ad_id)}, {"$set": {"approved": True}})
+    except Exception as e:
+        log_error("approve_ad", e)
+
+# Record click and update earnings
+async def record_click(publisher_id: int, amount: int):
+    try:
+        await publishers.update_one(
+            {"user_id": publisher_id},
+            {"$inc": {"clicks": 1, "earnings": amount}}
+        )
+    except Exception as e:
+        log_error("record_click", e)
+
+# Check if user is approved publisher
+async def check_eligibility(user_id: int):
+    try:
+        publisher = await get_publisher(user_id)
+        return bool(publisher and publisher.get("approved", False))
+    except Exception as e:
+        log_error("check_eligibility", e)
+        return False
+
+# Get ad stats by ID
+async def get_ad_stats(ad_id: str):
+    try:
         return await ads.find_one({"_id": ObjectId(ad_id)})
     except Exception as e:
-        await log_to_group(f"⚠️ Failed to get ad stats\nAd ID: {ad_id}\nError: {str(e)}")
+        log_error("get_ad_stats", e)
         return None
 
-async def get_random_ad(exclude_owner: Optional[int] = None) -> Optional[Dict[str, Any]]:
-    """Get random approved ad with optional owner exclusion"""
+# Approve payment manually
+async def approve_payment(publisher_id: int, amount: int):
     try:
-        await ensure_collections_initialized()
-        pipeline = [{"$match": {"approved": True}}]
-        
-        if exclude_owner:
-            pipeline.append({"$match": {"owner": {"$ne": exclude_owner}}})
-        
-        pipeline.append({"$sample": {"size": 1}})
-        
-        cursor = ads.aggregate(pipeline)
-        result = await cursor.to_list(length=1)
-        return result[0] if result else None
+        await publishers.update_one({"user_id": publisher_id}, {"$inc": {"earnings": amount}})
     except Exception as e:
-        await log_to_group(f"⚠️ Failed to get random ad\nError: {str(e)}")
-        return None
+        log_error("approve_payment", e)
 
-# Economic operations
-async def record_click(publisher_id: int, amount: int) -> bool:
-    """Record click and update earnings atomically"""
+# Get publisher earnings
+async def get_earnings(user_id: int):
     try:
-        await ensure_collections_initialized()
-        result = await publishers.update_one(
-            {"user_id": publisher_id},
-            {
-                "$inc": {
-                    "clicks": 1,
-                    "earnings": amount
-                }
-            }
-        )
-        return result.modified_count > 0
-    except Exception as e:
-        await log_to_group(f"⚠️ Click Recording Failed\nUser: {publisher_id}\nError: {str(e)}")
-        return False
-
-async def get_earnings(user_id: int) -> float:
-    """Get current earnings for a publisher"""
-    try:
-        await ensure_collections_initialized()
         publisher = await publishers.find_one({"user_id": user_id})
-        return float(publisher.get("earnings", 0)) if publisher else 0.0
+        return publisher.get("earnings", 0) if publisher else 0
     except Exception as e:
-        await log_to_group(f"⚠️ Failed to get earnings\nUser: {user_id}\nError: {str(e)}")
-        return 0.0
+        log_error("get_earnings", e)
+        return 0
 
-# Admin operations
-async def approve_publisher(user_id: int) -> bool:
-    """Approve publisher account"""
-    return await update_publisher(user_id, {"approved": True})
-
-async def approve_ad(ad_id: str) -> bool:
-    """Approve specific ad"""
+# Check if user is registered
+async def is_registered_user(user_id: int):
     try:
-        await ensure_collections_initialized()
-        result = await ads.update_one(
-            {"_id": ObjectId(ad_id)},
-            {"$set": {"approved": True}}
-        )
-        return result.modified_count > 0
+        return await publishers.find_one({"user_id": user_id}) is not None
     except Exception as e:
-        await log_to_group(f"⚠️ Ad Approval Failed\nAd: {ad_id}\nError: {str(e)}")
+        log_error("is_registered_user", e)
         return False
 
-async def approve_payment(publisher_id: int, amount: int) -> bool:
-    """Manually approve payment for publisher"""
+# Create profile if it doesn't exist
+async def create_profile_if_not_exists(user_id: int, username: str = ""):
     try:
-        await ensure_collections_initialized()
-        result = await publishers.update_one(
-            {"user_id": publisher_id},
-            {"$inc": {"earnings": amount}}
-        )
-        return result.modified_count > 0
+        if not await is_registered_user(user_id):
+            await register_publisher(user_id, username)
     except Exception as e:
-        await log_to_group(f"⚠️ Payment Approval Failed\nUser: {publisher_id}\nError: {str(e)}")
-        return False
+        log_error("create_profile_if_not_exists", e)
+
+# Get profile data
+async def get_profile_data(user_id: int):
+    try:
+        publisher = await get_publisher(user_id)
+        if publisher:
+            return {
+                "earnings": publisher.get("earnings", 0),
+                "clicks": publisher.get("clicks", 0),
+                "approved": publisher.get("approved", False),
+                "bot_link": publisher.get("bot_link", "")
+            }
+        return None
+    except Exception as e:
+        log_error("get_profile_data", e)
+        return None
