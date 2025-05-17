@@ -153,6 +153,16 @@ async def record_click(publisher_id: int, amount: int) -> bool:
         await log_to_group(f"⚠️ Click Recording Failed\nUser: {publisher_id}\nError: {str(e)}")
         return False
 
+async def get_earnings(user_id: int) -> float:
+    """Get current earnings for a publisher"""
+    try:
+        await ensure_collections_initialized()
+        publisher = await publishers.find_one({"user_id": user_id})
+        return float(publisher.get("earnings", 0)) if publisher else 0.0
+    except Exception as e:
+        await log_to_group(f"⚠️ Failed to get earnings\nUser: {user_id}\nError: {str(e)}")
+        return 0.0
+
 # Admin operations
 async def approve_publisher(user_id: int) -> bool:
     """Approve publisher account"""
