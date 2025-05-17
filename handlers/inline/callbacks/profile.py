@@ -10,14 +10,13 @@ async def show_profile_with_back(callback: CallbackQuery, user_id: int, success_
         profile = await get_profile_data(user_id)
         if not profile:
             raise ValueError("Profile not found")
-
         text = (
-            f"{success_msg}\n\n" if success_msg else ""
-            + f"👤 <b>Your Profile</b>\n"
-            + f"🆔 <b>User ID:</b> <code>{user_id}</code>\n"
-            + f"💸 <b>Earnings:</b> ₹{profile['earnings']}\n"
-            + f"👍 <b>Clicks:</b> {profile['clicks']}\n"
-            + f"✅ <b>Approved:</b> {'Yes' if profile['approved'] else 'No'}"
+            f"{success_msg}\n\n" if success_msg else "" +
+            f"👤 <b>Your Profile</b>\n" +
+            f"🆔 <b>User ID:</b> <code>{user_id}</code>\n" +
+            f"💸 <b>Earnings:</b> ₹{profile['earnings']}\n" +
+            f"👍 <b>Clicks:</b> {profile['clicks']}\n" +
+            f"✅ <b>Approved:</b> {'Yes' if profile['approved'] else 'No'}"
         )
         await callback.message.edit_text(
             text,
@@ -39,7 +38,7 @@ async def profile_cb(callback: CallbackQuery):
     if not await is_registered_user(user_id):
         await callback.message.edit_text(
             "⚠️ <b>Register First</b>\nClick Register to continue",
-            reply_markup=get_register_keyboard(),
+            reply_markup=get_register_keyboard(user_id=callback.from_user.id),
             parse_mode="HTML"
         )
         await callback.answer()
