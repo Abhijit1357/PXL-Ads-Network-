@@ -170,3 +170,16 @@ async def approve_ad(ad_id: str) -> bool:
     except Exception as e:
         await log_to_group(f"⚠️ Ad Approval Failed\nAd: {ad_id}\nError: {str(e)}")
         return False
+
+async def approve_payment(publisher_id: int, amount: int) -> bool:
+    """Manually approve payment for publisher"""
+    try:
+        await ensure_collections_initialized()
+        result = await publishers.update_one(
+            {"user_id": publisher_id},
+            {"$inc": {"earnings": amount}}
+        )
+        return result.modified_count > 0
+    except Exception as e:
+        await log_to_group(f"⚠️ Payment Approval Failed\nUser: {publisher_id}\nError: {str(e)}")
+        return False
