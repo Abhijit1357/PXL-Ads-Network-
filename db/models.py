@@ -4,7 +4,7 @@ import random
 from bson import ObjectId
 from typing import Optional, Dict, Any
 import traceback
-from utils.logger import log_to_group  # Assuming you have this logger
+from utils.logger import log_to_group
 
 async def ensure_collections_initialized():
     """Verify collections are available before operations"""
@@ -105,6 +105,15 @@ async def submit_ad(user_id: int, ad_text: str, link: str) -> Optional[ObjectId]
         return result.inserted_id
     except Exception as e:
         await log_to_group(f"⚠️ Ad Submission Failed\nUser: {user_id}\nError: {str(e)}")
+        return None
+
+async def get_ad_stats(ad_id: str) -> Optional[Dict[str, Any]]:
+    """Get advertisement statistics by ID"""
+    try:
+        await ensure_collections_initialized()
+        return await ads.find_one({"_id": ObjectId(ad_id)})
+    except Exception as e:
+        await log_to_group(f"⚠️ Failed to get ad stats\nAd ID: {ad_id}\nError: {str(e)}")
         return None
 
 async def get_random_ad(exclude_owner: Optional[int] = None) -> Optional[Dict[str, Any]]:
