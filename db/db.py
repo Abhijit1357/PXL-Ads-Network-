@@ -28,11 +28,14 @@ async def init_db():
                 MONGO_URI,
                 tls=True,
                 tlsCAFile=certifi.where(),
-                connectTimeoutMS=15000,
-                serverSelectionTimeoutMS=15000,
+                connectTimeoutMS=10000,
+                serverSelectionTimeoutMS=10000,
                 retryWrites=True,
                 retryReads=True,
-                socketTimeoutMS=30000
+                socketTimeoutMS=5000,
+                maxPoolSize=20,
+                maxIdleTimeMS=5000,
+                heartbeatFrequencyMS=5000
             )
             await client.admin.command('ping')
             logger.info("Ping successful")
@@ -51,6 +54,12 @@ async def init_db():
             ads = db['ads']
             logger.info(f"Publishers collection set: {publishers}")
             logger.info(f"Ads collection set: {ads}")
+            # Drop and recreate index
+            try:
+                await publishers.drop_index("user_id_1")
+                logger.info("Dropped existing user_id index")
+            except Exception as e:
+                logger.info(f"No user_id index to drop: {e}")
             await publishers.create_index("user_id", unique=True)
             await ads.create_index("owner")
             await ads.create_index("approved")
@@ -68,23 +77,24 @@ async def init_db():
     return False
 
 async def close_db():
-    global client, db_initialized, db, publishers, ads
+    global client, db, publishers, ads, db_initialized
     if client:
         try:
             client.close()
             logger.info("🛑 MongoDB connection closed.")
         except Exception as e:
             logger.error(f"Error while closing MongoDB: {e}")
-        finally:
-            client = None
-            db = None
-            publishers = None
-            ads = None
-            db_initialized = False
+    # Reset variables
+    client = None
+    db = None
+    publishers = None
+    ads = None
+    db_initialized = False
 
 def check_db_initialized():
-    if not db_initialized or None in (client, db, publishers, ads):
-        logger.error(f"❗ Database not initialized or disconnected. client={client}, db={db}, publishers={publishers}, ads={ads}")
+    global publishers, ads, db_initialized
+    if not db_initialized or publishers is None or ads is None:
+        logger.error(f"❗ Database not initialized or disconnected. db_initialized={db_initialized}, publishers={publishers}, ads={ads}")
         return False
     logger.info("✅ Database initialized and ready")
     return True
