@@ -50,8 +50,12 @@ async def init_db():
             if 'ads' not in collections:
                 await db.create_collection('ads')
                 logger.info("Created ads collection")
+            # Ensure publishers and ads are set
             publishers = db['publishers']
             ads = db['ads']
+            if publishers is None or ads is None:
+                logger.error("Failed to set publishers or ads collections!")
+                return False
             logger.info(f"Publishers collection set: {publishers}")
             logger.info(f"Ads collection set: {ads}")
             # Drop and recreate index
@@ -84,7 +88,6 @@ async def close_db():
             logger.info("🛑 MongoDB connection closed.")
         except Exception as e:
             logger.error(f"Error while closing MongoDB: {e}")
-    # Reset variables
     client = None
     db = None
     publishers = None
@@ -98,3 +101,14 @@ def check_db_initialized():
         return False
     logger.info("✅ Database initialized and ready")
     return True
+
+# Add getter functions to ensure access
+def get_publishers():
+    if not check_db_initialized():
+        raise ValueError("Database not initialized! Cannot access publishers.")
+    return publishers
+
+def get_ads():
+    if not check_db_initialized():
+        raise ValueError("Database not initialized! Cannot access ads.")
+    return ads
