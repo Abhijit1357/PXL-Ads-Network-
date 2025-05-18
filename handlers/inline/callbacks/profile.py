@@ -35,13 +35,5 @@ async def show_profile_with_back(callback: CallbackQuery, user_id: int, success_
 @router.callback_query(lambda x: x.data == "profile")
 async def profile_cb(callback: CallbackQuery):
     user_id = callback.from_user.id
-    if not await is_registered_user(user_id):
-        await callback.message.edit_text(
-            "⚠️ <b>Register First</b>\nClick Register to continue",
-            reply_markup=await get_register_keyboard(user_id=callback.from_user.id),
-            parse_mode="HTML"
-        )
-        await callback.answer()
-    else:
-        await show_profile_with_back(callback, user_id)
-        await callback.answer()
+    await show_profile_with_back(callback, user_id)
+    await callback.answer()
