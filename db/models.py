@@ -6,8 +6,8 @@ import traceback
 
 # Utility for error logging
 def log_error(context, error):
-    print(f"[Error - {context}] {error}")
-    print(traceback.format_exc())
+    error_message = f"[ERROR - {context}] {error}\n{traceback.format_exc()}"
+    print(error_message)
 
 # Register a new publisher
 async def register_publisher(user_id: int, username: str, bot_link: str = ""):
@@ -21,7 +21,8 @@ async def register_publisher(user_id: int, username: str, bot_link: str = ""):
             "clicks": 0,
             "joined": datetime.utcnow()
         }
-        await publishers.update_one({"user_id": user_id}, {"$set": data}, upsert=True)
+        result = await publishers.update_one({"user_id": user_id}, {"$set": data}, upsert=True)
+        print(f"[REGISTER] Saved for {user_id}, Modified: {result.modified_count}, Upserted: {result.upserted_id}")
     except Exception as e:
         log_error("register_publisher", e)
 
@@ -29,6 +30,7 @@ async def register_publisher(user_id: int, username: str, bot_link: str = ""):
 async def add_bot_link(user_id: int, bot_link: str):
     try:
         await publishers.update_one({"user_id": user_id}, {"$set": {"bot_link": bot_link}})
+        print(f"[BOT LINK] Updated for {user_id}: {bot_link}")
     except Exception as e:
         log_error("add_bot_link", e)
 
@@ -40,7 +42,7 @@ async def get_publisher(user_id: int):
         log_error("get_publisher", e)
         return None
 
-# get_profile alias (required by other files)
+# get_profile alias
 async def get_profile(user_id: int):
     return await get_publisher(user_id)
 
@@ -48,6 +50,7 @@ async def get_profile(user_id: int):
 async def approve_publisher(user_id: int):
     try:
         await publishers.update_one({"user_id": user_id}, {"$set": {"approved": True}})
+        print(f"[APPROVE] Publisher {user_id} approved.")
     except Exception as e:
         log_error("approve_publisher", e)
 
@@ -63,6 +66,7 @@ async def submit_ad(user_id: int, ad_text: str, link: str):
             "submitted_at": datetime.utcnow()
         }
         await ads.insert_one(data)
+        print(f"[SUBMIT AD] From {user_id}: {ad_text}")
     except Exception as e:
         log_error("submit_ad", e)
 
@@ -82,6 +86,7 @@ async def get_random_ad(exclude_owner: int = None):
 async def approve_ad(ad_id: str):
     try:
         await ads.update_one({"_id": ObjectId(ad_id)}, {"$set": {"approved": True}})
+        print(f"[APPROVE AD] ID: {ad_id}")
     except Exception as e:
         log_error("approve_ad", e)
 
@@ -92,6 +97,7 @@ async def record_click(publisher_id: int, amount: int):
             {"user_id": publisher_id},
             {"$inc": {"clicks": 1, "earnings": amount}}
         )
+        print(f"[CLICK] {publisher_id} earned {amount}")
     except Exception as e:
         log_error("record_click", e)
 
@@ -116,6 +122,7 @@ async def get_ad_stats(ad_id: str):
 async def approve_payment(publisher_id: int, amount: int):
     try:
         await publishers.update_one({"user_id": publisher_id}, {"$inc": {"earnings": amount}})
+        print(f"[MANUAL PAYMENT] {publisher_id} credited ₹{amount}")
     except Exception as e:
         log_error("approve_payment", e)
 
@@ -131,7 +138,9 @@ async def get_earnings(user_id: int):
 # Check if user is registered
 async def is_registered_user(user_id: int):
     try:
-        return await publishers.find_one({"user_id": user_id}) is not None
+        exists = await publishers.find_one({"user_id": user_id}) is not None
+        print(f"[CHECK USER] {user_id} registered: {exists}")
+        return exists
     except Exception as e:
         log_error("is_registered_user", e)
         return False
@@ -140,7 +149,10 @@ async def is_registered_user(user_id: int):
 async def create_profile_if_not_exists(user_id: int, username: str = ""):
     try:
         if not await is_registered_user(user_id):
+            print(f"[CREATE PROFILE] New user: {user_id} | Username: {username}")
             await register_publisher(user_id, username)
+        else:
+            print(f"[PROFILE] User {user_id} already registered.")
     except Exception as e:
         log_error("create_profile_if_not_exists", e)
 
