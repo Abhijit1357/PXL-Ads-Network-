@@ -11,20 +11,20 @@ async def register_callback(callback: CallbackQuery):
     user_id = callback.from_user.id
     username = callback.from_user.username or "NoUsername"
     name = callback.from_user.full_name or "Unknown"
-
+    
     # Ensure the user is registered
     await create_profile_if_not_exists(user_id, username)
-
+    
     # Prepare log message
     log_msg = (
         f"✅ New user registered!\n\n"
         f"🆔 <code>{user_id}</code>\n"
         f"👤 {'Username: @' + username if username != 'NoUsername' else 'Name: ' + name}"
     )
-
+    
     # Send log
     await log_to_group(callback.bot, log_msg)
-
+    
     # Respond to user
     await callback.answer()
     await callback.message.edit_text(
