@@ -24,6 +24,7 @@ def db_required(func):
 @db_required
 async def register_publisher(user_id: int, username: str, bot_link: str = ""):
     try:
+        logger.info(f"Registering user {user_id} with username {username}")
         data = {
             "user_id": user_id,
             "username": username,
@@ -33,12 +34,16 @@ async def register_publisher(user_id: int, username: str, bot_link: str = ""):
             "clicks": 0,
             "joined": datetime.utcnow()
         }
+        logger.info(f"Data to insert: {data}")
         result = await publishers.update_one(
             {"user_id": user_id},
             {"$set": data},
             upsert=True
         )
-        print(f"[REGISTER] user_id={user_id} | modified={result.modified_count} | upserted={result.upserted_id}")
+        logger.info(f"[REGISTER] user_id={user_id} | modified={result.modified_count} | upserted={result.upserted_id}")
+        # Verify data inserted
+        inserted_data = await publishers.find_one({"user_id": user_id})
+        logger.info(f"Inserted/Updated data: {inserted_data}")
         return result
     except Exception as e:
         log_error("register_publisher", e)
@@ -179,8 +184,10 @@ async def get_earnings(user_id: int):
 @db_required
 async def is_registered_user(user_id: int):
     try:
-        exists = await publishers.find_one({"user_id": user_id}) is not None
-        print(f"[IS REGISTERED] user={user_id} -> {exists}")
+        logger.info(f"Checking if user {user_id} is registered")
+        result = await publishers.find_one({"user_id": user_id})
+        exists = result is not None
+        logger.info(f"[IS REGISTERED] user={user_id} -> {exists}, result={result}")
         return exists
     except Exception as e:
         log_error("is_registered_user", e)
@@ -190,11 +197,12 @@ async def is_registered_user(user_id: int):
 @db_required
 async def create_profile_if_not_exists(user_id: int, username: str = ""):
     try:
+        logger.info(f"Checking if profile exists for user {user_id}")
         if not await is_registered_user(user_id):
-            print(f"[CREATE PROFILE] New: {user_id} | {username}")
+            logger.info(f"[CREATE PROFILE] New: {user_id} | {username}")
             await register_publisher(user_id, username)
         else:
-            print(f"[PROFILE EXISTS] user={user_id}")
+            logger.info(f"[PROFILE EXISTS] user={user_id}")
     except Exception as e:
         log_error("create_profile_if_not_exists", e)
 
