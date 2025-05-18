@@ -7,6 +7,14 @@ router = Router()
 
 async def show_profile_with_back(callback: CallbackQuery, user_id: int, success_msg: str = ""):
     try:
+        if not await is_registered_user(user_id):
+            await callback.message.edit_text(
+                "⚠️ <b>You are not registered.</b>\nClick Register to continue",
+                reply_markup=await get_register_keyboard(user_id),
+                parse_mode="HTML"
+            )
+            return
+        
         profile = await get_profile_data(user_id)
         if not profile:
             profile = {
