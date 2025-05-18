@@ -43,16 +43,23 @@ async def register_publisher(user_id: int, username: str, bot_link: str = ""):
             "joined": datetime.utcnow()
         }
         logger.info(f"Data to insert: {data}")
-        result = await publishers.update_one(
-            {"user_id": user_id},
-            {"$set": data},
-            upsert=True
+        # Add timeout to update_one
+        result = await asyncio.wait_for(
+            publishers.update_one(
+                {"user_id": user_id},
+                {"$set": data},
+                upsert=True
+            ),
+            timeout=10  # 10 seconds timeout
         )
         logger.info(f"[REGISTER] user_id={user_id} | modified={result.modified_count} | upserted={result.upserted_id}")
         # Verify data inserted
         inserted_data = await publishers.find_one({"user_id": user_id})
         logger.info(f"Inserted/Updated data: {inserted_data}")
         return result
+    except asyncio.TimeoutError:
+        logger.error(f"Timeout while registering user {user_id}: update_one operation took too long")
+        return None
     except Exception as e:
         log_error("register_publisher", e)
         return None
