@@ -16,6 +16,14 @@ async def show_profile_with_back(callback: CallbackQuery, user_id: int, success_
             return
         
         profile = await get_profile_data(user_id)
+        if profile is None:
+            await callback.message.edit_text(
+                "⚠️ <b>Profile not found.</b>\nPlease register first.",
+                reply_markup=await get_register_keyboard(user_id),
+                parse_mode="HTML"
+            )
+            return
+        
         if not profile:
             profile = {
                 "earnings": 0,
