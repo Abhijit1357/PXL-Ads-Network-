@@ -9,15 +9,21 @@ async def show_profile_with_back(callback: CallbackQuery, user_id: int, success_
     try:
         profile = await get_profile_data(user_id)
         if not profile:
-            raise ValueError("Profile not found")
+            profile = {
+                "earnings": 0,
+                "clicks": 0,
+                "approved": False
+            }
+        
         text = (
             f"{success_msg}\n\n" if success_msg else "" +
             f"👤 <b>Your Profile</b>\n" +
             f"🆔 <b>User ID:</b> <code>{user_id}</code>\n" +
-            f"💸 <b>Earnings:</b> ₹{profile['earnings']}\n" +
-            f"👍 <b>Clicks:</b> {profile['clicks']}\n" +
-            f"✅ <b>Approved:</b> {'Yes' if profile['approved'] else 'No'}"
+            f"💸 <b>Earnings:</b> ₹{profile.get('earnings', 0)}\n" +
+            f"👍 <b>Clicks:</b> {profile.get('clicks', 0)}\n" +
+            f"✅ <b>Approved:</b> {'Yes' if profile.get('approved', False) else 'No'}"
         )
+        
         await callback.message.edit_text(
             text,
             reply_markup=get_back_keyboard(),
