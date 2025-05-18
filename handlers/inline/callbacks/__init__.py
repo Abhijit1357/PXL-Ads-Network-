@@ -4,6 +4,7 @@ from .panels import router as panels_router
 from .general import router as general_router
 from .publisher_panel import router as publisher_panel_router
 from .register import router as register_router   # <-- Register router import
+from .dashboard import router as dashboard_router  # Add this import
 
 inline_callbacks_router = Router()
 
