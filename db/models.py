@@ -1,14 +1,27 @@
-from db.db import publishers, ads
+from db.db import publishers, ads, check_db_initialized
 from datetime import datetime
 import random
 from bson import ObjectId
 import traceback
+import functools
+import asyncio
 
 # Utility for error logging
 def log_error(context, error):
     print(f"[ERROR - {context}] {error}\n{traceback.format_exc()}")
 
+# Decorator to check DB initialization before running the function
+def db_required(func):
+    @functools.wraps(func)
+    async def wrapper(*args, **kwargs):
+        if not check_db_initialized():
+            log_error(func.__name__, "Database not initialized.")
+            return None
+        return await func(*args, **kwargs)
+    return wrapper
+
 # Register a new publisher
+@db_required
 async def register_publisher(user_id: int, username: str, bot_link: str = ""):
     try:
         data = {
@@ -32,6 +45,7 @@ async def register_publisher(user_id: int, username: str, bot_link: str = ""):
         return None
 
 # Add or update bot link
+@db_required
 async def add_bot_link(user_id: int, bot_link: str):
     try:
         await publishers.update_one(
@@ -43,6 +57,7 @@ async def add_bot_link(user_id: int, bot_link: str):
         log_error("add_bot_link", e)
 
 # Get a publisher
+@db_required
 async def get_publisher(user_id: int):
     try:
         return await publishers.find_one({"user_id": user_id})
@@ -54,6 +69,7 @@ async def get_publisher(user_id: int):
 get_profile = get_publisher
 
 # Approve a publisher
+@db_required
 async def approve_publisher(user_id: int):
     try:
         await publishers.update_one(
@@ -65,6 +81,7 @@ async def approve_publisher(user_id: int):
         log_error("approve_publisher", e)
 
 # Submit ad
+@db_required
 async def submit_ad(user_id: int, ad_text: str, link: str):
     try:
         data = {
@@ -81,6 +98,7 @@ async def submit_ad(user_id: int, ad_text: str, link: str):
         log_error("submit_ad", e)
 
 # Get random approved ad
+@db_required
 async def get_random_ad(exclude_owner: int = None):
     try:
         query = {"approved": True}
@@ -93,6 +111,7 @@ async def get_random_ad(exclude_owner: int = None):
         return None
 
 # Approve ad
+@db_required
 async def approve_ad(ad_id: str):
     try:
         await ads.update_one(
@@ -104,6 +123,7 @@ async def approve_ad(ad_id: str):
         log_error("approve_ad", e)
 
 # Record click and earnings
+@db_required
 async def record_click(publisher_id: int, amount: int):
     try:
         await publishers.update_one(
@@ -115,6 +135,7 @@ async def record_click(publisher_id: int, amount: int):
         log_error("record_click", e)
 
 # Check if approved
+@db_required
 async def check_eligibility(user_id: int):
     try:
         publisher = await get_publisher(user_id)
@@ -124,6 +145,7 @@ async def check_eligibility(user_id: int):
         return False
 
 # Ad stats by ID
+@db_required
 async def get_ad_stats(ad_id: str):
     try:
         return await ads.find_one({"_id": ObjectId(ad_id)})
@@ -132,6 +154,7 @@ async def get_ad_stats(ad_id: str):
         return None
 
 # Manual earnings add
+@db_required
 async def approve_payment(publisher_id: int, amount: int):
     try:
         await publishers.update_one(
@@ -143,6 +166,7 @@ async def approve_payment(publisher_id: int, amount: int):
         log_error("approve_payment", e)
 
 # Get earnings only
+@db_required
 async def get_earnings(user_id: int):
     try:
         publisher = await get_publisher(user_id)
@@ -152,6 +176,7 @@ async def get_earnings(user_id: int):
         return 0
 
 # Check if registered
+@db_required
 async def is_registered_user(user_id: int):
     try:
         exists = await publishers.find_one({"user_id": user_id}) is not None
@@ -162,6 +187,7 @@ async def is_registered_user(user_id: int):
         return False
 
 # Create if not exists
+@db_required
 async def create_profile_if_not_exists(user_id: int, username: str = ""):
     try:
         if not await is_registered_user(user_id):
@@ -173,6 +199,7 @@ async def create_profile_if_not_exists(user_id: int, username: str = ""):
         log_error("create_profile_if_not_exists", e)
 
 # Profile summary
+@db_required
 async def get_profile_data(user_id: int):
     try:
         publisher = await get_publisher(user_id)
