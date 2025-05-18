@@ -10,27 +10,24 @@ async def show_profile_with_back(callback: CallbackQuery, user_id: int, success_
         if not await is_registered_user(user_id):
             await callback.message.edit_text(
                 "⚠️ <b>You are not registered.</b>\nClick Register to continue",
-                reply_markup=await get_register_keyboard(user_id),
+                reply_markup=get_register_keyboard(user_id),
                 parse_mode="HTML"
             )
             return
-        
         profile = await get_profile_data(user_id)
         if profile is None:
             await callback.message.edit_text(
                 "⚠️ <b>Profile not found.</b>\nPlease register first.",
-                reply_markup=await get_register_keyboard(user_id),
+                reply_markup=get_register_keyboard(user_id),
                 parse_mode="HTML"
             )
             return
-        
         if not profile:
             profile = {
                 "earnings": 0,
                 "clicks": 0,
                 "approved": False
             }
-        
         text = (
             f"{success_msg}\n\n" if success_msg else "" +
             f"👤 <b>Your Profile</b>\n" +
@@ -39,7 +36,6 @@ async def show_profile_with_back(callback: CallbackQuery, user_id: int, success_
             f"👍 <b>Clicks:</b> {profile.get('clicks', 0)}\n" +
             f"✅ <b>Approved:</b> {'Yes' if profile.get('approved', False) else 'No'}"
         )
-        
         await callback.message.edit_text(
             text,
             reply_markup=get_back_keyboard(),
