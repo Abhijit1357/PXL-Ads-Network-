@@ -202,7 +202,9 @@ async def create_profile_if_not_exists(user_id: int, username: str = ""):
 @db_required
 async def get_profile_data(user_id: int):
     try:
+        print(f"Getting profile data for user {user_id}")  
         publisher = await get_publisher(user_id)
+        print(f"Publisher data: {publisher}")  
         if publisher:
             return {
                 "earnings": publisher.get("earnings", 0),
@@ -210,7 +212,9 @@ async def get_profile_data(user_id: int):
                 "approved": publisher.get("approved", False),
                 "bot_link": publisher.get("bot_link", "")
             }
+        print("Publisher not found")  
         return None
     except Exception as e:
         log_error("get_profile_data", e)
+        print(f"Error: {e}")  
         return None
