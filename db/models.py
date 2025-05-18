@@ -43,22 +43,28 @@ async def register_publisher(user_id: int, username: str, bot_link: str = ""):
             "joined": datetime.utcnow()
         }
         logger.info(f"Data to insert: {data}")
-        # Add timeout to update_one
+        logger.info("Starting update_one operation")
+        # Check if publishers is None
+        if publishers is None:
+            logger.error("publishers is None! Cannot perform update_one operation")
+            return None
         result = await asyncio.wait_for(
             publishers.update_one(
                 {"user_id": user_id},
                 {"$set": data},
                 upsert=True
             ),
-            timeout=10  # 10 seconds timeout
+            timeout=10
         )
+        logger.info(f"update_one completed: {result}")
         logger.info(f"[REGISTER] user_id={user_id} | modified={result.modified_count} | upserted={result.upserted_id}")
         # Verify data inserted
+        logger.info("Starting find_one operation for verification")
         inserted_data = await asyncio.wait_for(
             publishers.find_one({"user_id": user_id}),
             timeout=5
         )
-        logger.info(f"Inserted/Updated data: {inserted_data}")
+        logger.info(f"find_one completed: Inserted/Updated data: {inserted_data}")
         return result
     except asyncio.TimeoutError as te:
         logger.error(f"Timeout while registering user {user_id}: {te}")
