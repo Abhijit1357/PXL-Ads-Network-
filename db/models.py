@@ -241,3 +241,15 @@ async def get_profile_data(user_id: int):
         log_error("get_profile_data", e)
         print(f"Error: {e}")
         return None
+
+@db_required
+async def apply_for_monetization(user_id: int):
+    try:
+        publishers = get_publishers()
+        await publishers.update_one(
+            {"user_id": user_id},
+            {"$set": {"applied_for_monetization": True}}
+        )
+        print(f"[APPLY] user={user_id} has applied for monetization.")
+    except Exception as e:
+        log_error("apply_for_monetization", e)
