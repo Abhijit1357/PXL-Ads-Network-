@@ -253,3 +253,15 @@ async def apply_for_monetization(user_id: int):
         print(f"[APPLY] user={user_id} has applied for monetization.")
     except Exception as e:
         log_error("apply_for_monetization", e)
+
+@db_required
+async def add_bot_for_approval(user_id: int, bot_username: str):
+    try:
+        publishers = get_publishers()
+        await publishers.update_one(
+            {"user_id": user_id},
+            {"$set": {"bot_link": bot_username}}
+        )
+        print(f"[ADD BOT] user={user_id} -> {bot_username}")
+    except Exception as e:
+        log_error("add_bot_for_approval", e)
