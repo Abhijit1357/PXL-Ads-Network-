@@ -277,3 +277,23 @@ async def get_user_bots(user_id: int):
     except Exception as e:
         log_error("get_user_bots", e)
         return None
+
+@db_required
+async def get_stats(user_id: int):
+    try:
+        publishers = get_publishers()
+        user = await publishers.find_one({"user_id": user_id})
+        if not user:
+            return None
+        bots = user.get("bot_link", [])
+        total_clicks = sum(bot.get("clicks", 0) for bot in bots)
+        total_bots = len(bots)
+        total_earnings = user.get("earnings", 0)
+        return {
+            "clicks": total_clicks,
+            "bots": total_bots,
+            "earnings": total_earnings,
+        }
+    except Exception as e:
+        log_error("get_stats", e)
+        return None
