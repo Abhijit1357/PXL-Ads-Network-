@@ -265,3 +265,15 @@ async def add_bot_for_approval(user_id: int, bot_username: str):
         print(f"[ADD BOT] user={user_id} -> {bot_username}")
     except Exception as e:
         log_error("add_bot_for_approval", e)
+
+@db_required
+async def get_user_bots(user_id: int):
+    try:
+        publishers = get_publishers()
+        user = await publishers.find_one({"user_id": user_id})
+        if user:
+            return user.get("bot_link")
+        return None
+    except Exception as e:
+        log_error("get_user_bots", e)
+        return None
